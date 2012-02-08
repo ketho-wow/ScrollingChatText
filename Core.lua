@@ -83,11 +83,18 @@ function SCR:OnInitialize()
 	
 	-- SHOW_COMBAT_TEXT seems to be "1" instead of "0", at loadtime regardless if the option was disabled
 	if profile.sink20OutputSink == "Blizzard" and SHOW_COMBAT_TEXT == "0" then
-		-- assign to Popup if Blizzard FCT is disabled, otherwise LibSink will fallback to UIErrorsFrame by default
-		-- (I find Popup easier for the eyes, although obstructing)
-		profile.sink20OutputSink = "Popup" 
+		if S.CombatTextEnabled.MikScrollingBattleText then
+			profile.sink20OutputSink = "MikSBT" 
+		elseif S.CombatTextEnabled.Parrot then
+			profile.sink20OutputSink = "Parrot" 
+		elseif S.CombatTextEnabled.sct then
+			profile.sink20OutputSink = "SCT" 
+		-- assign to Prat-3.0 Popup if all Combat Text sinks are disabled,
+		-- otherwise LibSink will fallback to UIErrorsFrame by default
+		elseif select(4, GetAddOnInfo("Prat-3.0")) then
+			profile.sink20OutputSink = "Popup" 
+		end
 	end
-	
 	self:OnEnable() -- delayed OnInitialize done, call OnEnable again now
 end
 
@@ -223,7 +230,7 @@ end
 local args = {}
 local split = {255, 155, 55}
 
-local fonts = LSM:HashTable("font")
+local fonts = LSM:HashTable(LSM.MediaType.FONT)
 
 local ICON_LIST = ICON_LIST
 local ICON_TAG_LIST = ICON_TAG_LIST
@@ -393,8 +400,10 @@ end
 function SCR:ReplaceArgs(msg, args)
 	for k in gmatch(msg, "%b<>") do
 		local s = strlower(gsub(k, "[<>]", ""))
-		local esc = gsub(args[s], "%%", "%%%%") -- escape any inadvertently captures (error: invalid capture index)
-		msg = msg:gsub(k, esc or s)
+		-- escape any inadvertent captures in the msg (error: invalid capture index)
+		-- .. unless if you fed <%1> as argument
+		s = gsub(args[s] or s, "%%", "%%%%")
+		msg = msg:gsub(k, s)
 	end
 	return msg
 end

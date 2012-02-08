@@ -2,7 +2,7 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.07.05					---
---- Version: r1 [2012.02.08]			---
+--- Version: 0.1 [2012.02.08]			---
 -------------------------------------------
 --- Curse			http://www.curse.com/addons/wow/scrollingchattext
 --- WoWInterface	N/A
