@@ -1,0 +1,32 @@
+## Interface: 40300
+## Version: r1
+## Title: ScrollingChatText
+## Notes: Shows Chat as Combat Text
+## Author: Ketho @ EU-Boulderfist
+## SavedVariables: ScrollingChatTextDB
+## OptionalDeps: Ace3, !ClassColors
+## X-Embeds: Ace3
+
+#@no-lib-strip@
+Libs\LibStub\LibStub.lua
+Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
+Libs\AceAddon-3.0\AceAddon-3.0.xml
+Libs\AceEvent-3.0\AceEvent-3.0.xml
+Libs\AceTimer-3.0\AceTimer-3.0.xml
+Libs\AceDB-3.0\AceDB-3.0.xml
+Libs\AceDBOptions-3.0\AceDBOptions-3.0.xml
+Libs\AceConsole-3.0\AceConsole-3.0.xml
+Libs\AceGUI-3.0\AceGUI-3.0.xml
+Libs\AceConfig-3.0\AceConfig-3.0.xml
+Libs\LibSharedMedia-3.0\lib.xml
+Libs\AceGUI-3.0-SharedMediaWidgets\widget.xml
+Libs\LibSink-2.0\lib.xml
+#@end-no-lib-strip@
+Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
+
+ScrollingChatText.lua
+Locales.lua
+Options.lua
+Core.lua
+Extra.lua
+Broker.lua
