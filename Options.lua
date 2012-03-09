@@ -65,17 +65,22 @@ S.defaults = {
 		
 		sink20OutputSink = "Blizzard",
 		Message = "<ICON> [<TIME>] [<CHAN>] [<NAME>]: <MSG>",
-		LevelMessage = "<ICON> [<NAME>]: "..LEVEL.." <LEVEL>",
+		LevelMessage = "<ICON> [<CHAN>] [<NAME>]: "..LEVEL.." <LEVEL>",
 		
 		FilterSelf = true,
 		TrimRealm = true,
+		
+		InCombat = true,
+		NotInCombat = true,
 		
 		Timestamp = 6, -- 15:27
 		IconSize = 16,
 		Font = LSM:GetDefault(LSM.MediaType.FONT),
 		FontSize = 16,
 		
-		color = {},
+		color = {
+			TIMESTAMP = {r = 0.67, g = 0.67, b = 0.67},
+		},
 	}
 }
 
@@ -209,16 +214,17 @@ S.options = {
 					type = "description", order = 6,
 					fontSize = "large",
 					name = function()
-						wipe(args)
-						local raceIcon = format("|T%s:%s:%s:0:3:256:512:%s|t", S.racePath, profile.IconSize, profile.IconSize, strjoin(":", unpack(S.RACE_ICON_TCOORDS_256[strupper(select(2, UnitRace("player"))).."_"..S.sexremap[UnitSex("player")]])))
-						local classIcon = format("|T%s:%s:%s:1:3:256:256:%s|t", S.classPath, profile.IconSize, profile.IconSize, strjoin(":", unpack(S.CLASS_ICON_TCOORDS_256[select(2, UnitClass("player"))])))
+						local raceIcon = S.GetRaceIcon(strupper(select(2, UnitRace("player"))).."_"..S.sexremap[UnitSex("player")], 1, 3)
+						local classIcon = S.GetClassIcon(select(2, UnitClass("player")), 2, 3)
 						args.icon = (profile.IconSize > 1) and raceIcon..classIcon or ""
-						args.time = (profile.Timestamp > 1) and "|cff979797"..BetterDate(S.timestamps[profile.Timestamp], time()).."|r" or ""
+						args.time = S.GetTimestamp()
+						
 						local chatType = ChatEdit_GetLastActiveWindow():GetAttribute("chatType")
 						local channelTarget = ChatEdit_GetLastActiveWindow():GetAttribute("channelTarget")
 						if not profile.color[chatType] then return "   |cffFF0000"..ERROR_CAPS.."|r: "..chatType end -- Error: RAID_WARNING, ...
 						local chanColor = S.chanCache[chatType]
 						args.chan = "|cff"..chanColor..(chatType == "CHANNEL" and channelTarget or L[chatType]).."|r"
+						
 						args.name = "|cff"..S.classCache[S.playerClass]..S.playerName.."|r"
 						args.msg = "|cff"..chanColor..L.HELLO_WORLD.."|r"
 						return "  "..SCR:ReplaceArgs(profile.Message, args)
@@ -271,28 +277,45 @@ S.options = {
 						},
 					},
 				},
+				inline2 = {
+					type = "group", order = 2,
+					name = L.OPTION_GROUP_SHOW_WHEN,
+					inline = true,
+					args = {
+						InCombat = {
+							type = "toggle", order = 1,
+							width = "full", descStyle = "",
+							name = L.OPTION_SHOW_INCOMBAT,
+						},
+						NotInCombat = {
+							type = "toggle", order = 2,
+							width = "full", descStyle = "",
+							name = L.OPTION_SHOW_NOTINCOMBAT,
+						},
+					},
+				},
 				Timestamp = {
-					type = "select", order = 2,
+					type = "select", order = 3,
 					desc = OPTION_TOOLTIP_TIMESTAMPS,
 					values = xmpl_timestamps,
 					name = " "..TIMESTAMPS_LABEL,
 				},
 				IconSize = {
-					type = "select", order = 3,
+					type = "select", order = 4,
 					descStyle = "",
 					values = {},
 					name = " "..L.OPTION_ICON_SIZE,
 				},
-				newline = {type = "description", order = 4, name = ""},
+				newline = {type = "description", order = 5, name = ""},
 				Font = {
-					type = "select", order = 5,
+					type = "select", order = 6,
 					descStyle = "",
 					values = LSM:HashTable("font"),
 					dialogControl = "LSM30_Font",
 					name = " "..L.OPTION_FONT.." |cffFF0000(NYI)|r",
 				},
 				FontSize = {
-					type = "select", order = 6,
+					type = "select", order = 7,
 					descStyle = "",
 					values = {},
 					name = " "..FONT_SIZE.." |cffFF0000(NYI)|r",
@@ -317,8 +340,21 @@ S.options = {
 					inline = true,
 					args = {},
 				},
+				inline3 = {
+					type = "group", order = 3,
+					name = OTHER,
+					inline = true,
+					args = {
+						TIMESTAMP = {
+							type = "color", order = 1,
+							name = TIMESTAMPS_LABEL,
+							get = "GetValueColor",
+							set = "SetValueColorChannel",
+						},
+					},
+				},
 				Reset = {
-					type = "execute", order = 3,
+					type = "execute", order = 4,
 					descStyle = "",
 					name = RESET,
 					func = function()
@@ -378,16 +414,17 @@ S.options = {
 					type = "input", order = 2,
 					width = "full",
 					name = "",
-					set = "SetLevelMessage",
+					set = "SetMessage",
 				},
 				Preview = {
 					type = "description", order = 3,
 					fontSize = "large",
 					name = function()
-						wipe(args)
-						local classIcon = format("|T%s:%s:%s:1:3:256:256:%s|t", S.classPath, profile.IconSize, profile.IconSize, strjoin(":", unpack(S.CLASS_ICON_TCOORDS_256[select(2, UnitClass("player"))])))
-						args.icon = (profile.IconSize > 1) and classIcon or ""
-						args.time = (profile.Timestamp > 1) and "|cff979797"..BetterDate(S.timestamps[profile.Timestamp], time()).."|r" or ""
+						local raceIcon = S.GetRaceIcon(strupper(select(2, UnitRace("player"))).."_"..S.sexremap[UnitSex("player")], 1, 3)
+						local classIcon = S.GetClassIcon(select(2, UnitClass("player")), 2, 3)
+						args.icon = (profile.IconSize > 1) and raceIcon..classIcon or ""
+						args.time = S.GetTimestamp()
+						args.chan = GetNumRaidMembers() > 0 and "|cffFF7F00"..RAID.."|r" or "|cffA8A8FF"..PARTY.."|r"
 						args.name = "|cff"..S.classCache[S.playerClass]..S.playerName.."|r"
 						local playerLevel = UnitLevel("player")
 						args.level = "|cffADFF2F"..playerLevel + (playerLevel == maxLevel and 0 or 1).."|r"
@@ -432,7 +469,7 @@ function SCR:GetValueColor(i)
 	return c.r, c.g, c.b
 end
 
-local function SetValueColor(i, r, g, b)
+function SCR:SetValueColor(i, r, g, b)
 	local c = profile.color[i[#i]]
 	c.r = r
 	c.g = g
@@ -444,27 +481,19 @@ end
 
 function SCR:SetValueColorClass(...)
 	wipe(S.classCache)
-	SetValueColor(...)
+	self:SetValueColor(...)
 end
 
 function SCR:SetValueColorChannel(...)
 	wipe(S.chanCache)
-	SetValueColor(...)
+	self:SetValueColor(...)
 end
-
-local validateMsg = {
-	icon = true,
-	time = true,
-	chan = true,
-	name = true,
-	msg = true,
-}
 
 function SCR:SetMessage(i, v)
 	profile[i[#i]] = (v:trim() == "") and defaults.profile[i[#i]] or v
 	for k in gmatch(v, "%b<>") do
 		local s = strlower(gsub(k, "[<>]", ""))
-		if not validateMsg[s] then
+		if not S.validateMsg[s] then
 			self:Print(ERROR_CAPS..": |cffFFFF00"..k.."|r")
 		end
 	end
@@ -488,7 +517,7 @@ do
 	end
 	
 	for i, v in ipairs({"Blizzard", "MikSBT", "Parrot", "SCT"}) do
-		LibSink.args[v].name = (i == 1) and funcBlizzard or "|cff71D5FF"..LibSink.args[v].name.."|r"
+		LibSink.args[v].name = (v == "Blizzard") and funcBlizzard or "|cff71D5FF"..LibSink.args[v].name.."|r"
 		LibSink.args[v].order = i
 	end
 	

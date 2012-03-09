@@ -98,12 +98,19 @@ function SCR:OnInitialize()
 	self:OnEnable() -- delayed OnInitialize done, call OnEnable again now
 end
 
+local combatState
+
 function SCR:OnEnable()
 	if not profile then return end -- Initialization not yet done
 	
 	-- Chat events
 	self:RegisterEvent("CHANNEL_UI_UPDATE")
 	self:CHANNEL_UI_UPDATE() -- addon was disabled; user did a /reload
+	
+	-- Enter/Leave Combat events
+	self:RegisterEvent("PLAYER_REGEN_DISABLED", "PLAYER_REGEN")
+	self:RegisterEvent("PLAYER_REGEN_ENABLED", "PLAYER_REGEN")
+	combatState = UnitAffectingCombat("player")
 	
 	for method, tbl in pairs(S.events) do
 		for _, event in ipairs(tbl) do
@@ -134,6 +141,10 @@ function SCR:OnEnable()
 		-- the returns of GetFriendInfo() only get updated when FRIENDLIST_UPDATE fires
 		if profile.LevelFriend then
 			ShowFriends() -- fires FRIENDLIST_UPDATE
+		end
+		-- BN_FRIEND_INFO_CHANGED doesn't fire on login; but it does on actual levelups; just to be sure
+		if profile.LevelFriendBnet then
+			self:BN_FRIEND_INFO_CHANGED()
 		end
 	end, 11)
 end
@@ -183,7 +194,7 @@ local disable = {
 }
 
 function SCR:SlashCommand(input)
-	if #strtrim(input) == 0 then
+	if strtrim(input) == "" then
 		--InterfaceOptionsFrame_OpenToCategory(NAME)
 		ACD:Open("ScrollingChatText_Parent")
 	elseif enable[input] then
@@ -227,6 +238,20 @@ function SCR:CHANNEL_UI_UPDATE()
 	ACR:NotifyChange("ScrollingChatText_Parent")
 end
 
+function SCR:PLAYER_REGEN(event, ...)
+	if event == "PLAYER_REGEN_DISABLED" then
+		combatState = true
+	elseif event == "PLAYER_REGEN_ENABLED" then
+		combatState = false
+	end
+end
+
+local function CombatFilter()
+	if (profile.NotInCombat and not combatState) or (profile.InCombat and combatState) then
+		return true
+	end
+end
+
 local args = {}
 local split = {255, 155, 55}
 
@@ -250,12 +275,8 @@ function SCR:CHAT_MSG(event, ...)
 		local _, class, _, race, sex, realm = GetPlayerInfoByGUID(guid)
 		if not class then return end
 		
-		wipe(args) -- maybe superfluous
-		
-		args.time = (profile.Timestamp > 1) and "|cff979797"..BetterDate(S.timestamps[profile.Timestamp], time()).."|r" or ""
-		
-		local raceIcon = format("|T%s:%s:%s:0:0:256:512:%s|t", S.racePath, profile.IconSize, profile.IconSize, strjoin(":", unpack(S.RACE_ICON_TCOORDS_256[strupper(race).."_"..S.sexremap[sex]])))
-		local classIcon = format("|T%s:%s:%s:0:0:256:256:%s|t", S.classPath, profile.IconSize, profile.IconSize, strjoin(":", unpack(S.CLASS_ICON_TCOORDS_256[class])))
+		local raceIcon = S.GetRaceIcon(strupper(race).."_"..S.sexremap[sex], 1, 1)
+		local classIcon = S.GetClassIcon(class, 1, 1)
 		args.icon = (profile.IconSize > 1 and not isChat) and raceIcon..classIcon or ""
 		
 		local chanColor = S.chanCache[subevent]
@@ -306,8 +327,8 @@ function SCR:CHAT_MSG_ACH(event, ...)
 	
 	local subevent = event:match("CHAT_MSG_(.+)")	
 	if profile[subevent] then
-		local raceIcon = format("|T%s:%s:%s:0:0:256:512:%s|t", S.racePath, profile.IconSize, profile.IconSize, strjoin(":", unpack(S.RACE_ICON_TCOORDS_256[strupper(race).."_"..S.sexremap[sex]])))
-		local classIcon = format("|T%s:%s:%s:1:0:256:256:%s|t", S.classPath, profile.IconSize, profile.IconSize, strjoin(":", unpack(S.CLASS_ICON_TCOORDS_256[class])))
+		local raceIcon = S.GetRaceIcon(strupper(race).."_"..S.sexremap[sex], 1, 1)
+		local classIcon = S.GetClassIcon(class, 1, 1)
 		local icon = (profile.IconSize > 1 and not isChat) and raceIcon..classIcon or ""
 		local color = profile.color[subevent]
 		sourceName = profile.TrimRealm and sourceName:match("(.-)%-") or sourceName -- remove realm names
@@ -345,11 +366,9 @@ function SCR:CHAT_MSG_BN(event, ...)
 			
 			-- you can chat with a friend from a friend, through a Real ID Conversation,
 			-- but only the toon name, and not the class/race/level/realm would be available
-			local classIcon = (class ~= "") and format("|T%s:%s:%s:1:0:256:256:%s|t", S.classPath, profile.IconSize, profile.IconSize, strjoin(":", unpack(S.CLASS_ICON_TCOORDS_256[S.revLOCALIZED_CLASS_NAMES[class]]))) or ""
+			local classIcon = (class ~= "") and S.GetClassIcon(S.revLOCALIZED_CLASS_NAMES[class], 1, 1) or ""
 			args.icon = (profile.IconSize > 1 and not isChat) and classIcon or ""
-			
 			-- can't add (or very hard to) add Race Icons, since the BNGetToonInfo return values are localized; also would need to know the sex
-			args.time = (profile.Timestamp > 1) and "|cff979797"..BetterDate(S.timestamps[profile.Timestamp], time()).."|r" or ""
 			
 			local chanColor = S.chanCache[subevent]
 			args.chan = "|cff"..chanColor..L[subevent].."|r"
@@ -382,8 +401,6 @@ function SCR:CHAT_MSG_BN(event, ...)
 		elseif client == BNET_CLIENT_SC2 or client == BNET_CLIENT_D3 then
 			args.icon = (profile.IconSize > 1 and not isChat) and "|TInterface\\ChatFrame\\UI-ChatIcon-"..S.clients[client]..":14:14:0:-1|t" or ""
 			
-			args.time = (profile.Timestamp > 1) and "|cff979797"..BetterDate(S.timestamps[profile.Timestamp], time()).."|r" or ""
-			
 			local chanColor = S.chanCache[subevent]
 			args.chan = "|cff"..chanColor..L[subevent].."|r"
 			
@@ -411,7 +428,11 @@ end
 local nokey = {}
 
 function SCR:Output(args, msg, color)
+	if not CombatFilter() then return end
+	
+	args.time = S.GetTimestamp()
 	msg = self:ReplaceArgs(msg, args)
+	
 	color = profile.ColorMessage and color or nokey
 	self:Pour(msg, color.r, color.g, color.b, fonts[profile.Font], profile.FontSize)
 end

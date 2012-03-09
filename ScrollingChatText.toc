@@ -1,5 +1,5 @@
 ## Interface: 40300
-## Version: 0.1
+## Version: 0.2
 ## Title: ScrollingChatText
 ## Notes: Shows Chat as Combat Text
 ## Author: Ketho @ EU-Boulderfist
@@ -24,8 +24,9 @@ Libs\LibSink-2.0\lib.xml
 #@end-no-lib-strip@
 Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
 
-ScrollingChatText.lua
 Locales.lua
+
+ScrollingChatText.lua
 Options.lua
 Core.lua
 Extra.lua

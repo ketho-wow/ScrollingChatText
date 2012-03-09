@@ -2,10 +2,10 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.07.05					---
---- Version: 0.1 [2012.02.08]			---
+--- Version: 0.2 [2012.03.09]			---
 -------------------------------------------
 --- Curse			http://www.curse.com/addons/wow/scrollingchattext
---- WoWInterface	N/A
+--- WoWInterface	http://www.wowinterface.com/downloads/info20827-ScrollingChatText.html
 
 -- To Do:
 -- # More possible chat types. CHAT_MSG_SYSTEM, Loot, Monsters/NPCs, CHAT_MSG_TARGETICONS (?)
@@ -19,7 +19,7 @@
 -- # LibSink(?) Messages with Links sometimes not even being output to a chat channel
 
 local NAME, S = ...
-S.VERSION = 0.1
+S.VERSION = 0.2
 S.BUILD = "Release"
 
 -- ScrollingChatText abbreviates to SCR in order to avoid confusion with SCT (ScrollingCombatText)
@@ -80,6 +80,12 @@ S.RACE_ICON_TCOORDS_256 = { -- GlueXML\CharacterCreate.lua L25 (4.3.0.15050)
 
 S.sexremap = {nil, "MALE", "FEMALE"}
 
+function S.GetRaceIcon(k, x, y)
+	local raceCoords = strjoin(":", unpack(S.RACE_ICON_TCOORDS_256[k]))
+	local raceIcon = format("|T%s:%s:%s:"..x..":"..y..":256:512:%s|t", S.racePath, profile.IconSize, profile.IconSize, raceCoords)
+	return raceIcon
+end
+
 	-------------------
 	--- Class Icons ---
 	-------------------
@@ -92,6 +98,12 @@ for k1, v1 in pairs(S.CLASS_ICON_TCOORDS_256) do
 	for k2, v2 in ipairs(v1) do
 		S.CLASS_ICON_TCOORDS_256[k1][k2] = v2*256
 	end
+end
+
+function S.GetClassIcon(k, x, y)
+	local classCoords = strjoin(":", unpack(S.CLASS_ICON_TCOORDS_256[k]))
+	local classIcon = format("|T%s:%s:%s:"..x..":"..y..":256:256:%s|t", S.classPath, profile.IconSize, profile.IconSize, classCoords)
+	return classIcon
 end
 
 	--------------------
@@ -245,6 +257,11 @@ for i, v in ipairs(S.timestamps) do
 	S.timestamps[i] = v:trim() -- remove trailing space
 end
 
+function S.GetTimestamp()
+	local c = profile.color.TIMESTAMP
+	return (profile.Timestamp > 1) and "|cff"..S.chanCache.TIMESTAMP..BetterDate(S.timestamps[profile.Timestamp], time()).."|r" or ""
+end
+
 	---------------
 	--- LibSink ---
 	---------------
@@ -263,6 +280,19 @@ S.clients = { -- also used as remap for SC2/D3 icon
 	[BNET_CLIENT_WOW] = "WOW",
 	[BNET_CLIENT_SC2] = "SC2",
 	[BNET_CLIENT_D3] = "D3",
+}
+
+	--------------------
+	--- Message Args ---
+	--------------------
+
+S.validateMsg = {
+	icon = true,
+	time = true,
+	chan = true,
+	name = true,
+	msg = true,
+	level = true,
 }
 
 	--------------------------
