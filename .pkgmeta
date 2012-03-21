@@ -34,9 +34,7 @@ externals:
   Libs/LibSharedMedia-3.0:
     url: svn://svn.wowace.com/wow/libsharedmedia-3-0/mainline/trunk/LibSharedMedia-3.0
     tag: latest
-  Libs/AceGUI-3.0-SharedMediaWidgets:
-    url: svn://svn.wowace.com/wow/ace-gui-3-0-shared-media-widgets/mainline/trunk/AceGUI-3.0-SharedMediaWidgets
-    tag: latest
+  Libs/AceGUI-3.0-SharedMediaWidgets: svn://svn.wowace.com/wow/ace-gui-3-0-shared-media-widgets/mainline/trunk/AceGUI-3.0-SharedMediaWidgets
   Libs/LibSink-2.0:
     url: svn://svn.wowace.com/wow/libsink-2-0/mainline/trunk/LibSink-2.0
     tag: latest
