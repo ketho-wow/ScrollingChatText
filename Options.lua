@@ -17,7 +17,7 @@ local format, gsub = format, gsub
 	--- Example Timestamps ---
 	--------------------------
 
-local exampleTime = time({ -- FrameXML\InterfaceOptionsPanels.lua L1203 (4.3.0.15050)
+local exampleTime = time({ -- FrameXML\InterfaceOptionsPanels.lua L1203 (4.3.3.15354)
 	year = 2010,
 	month = 12,
 	day = 15,
@@ -130,7 +130,6 @@ S.options = {
 			handler = SCR,
 			get = "GetValue",
 			set = "SetValue",
-			disabled = "Disabled",
 			args = {
 				inline1 = {
 					type = "group", order = 1,
@@ -238,7 +237,6 @@ S.options = {
 			handler = SCR,
 			get = "GetValue",
 			set = "SetValue",
-			disabled = "Disabled",
 			args = {
 				inline1 = {
 					type = "group", order = 1,
@@ -326,7 +324,6 @@ S.options = {
 			type = "group", order = 3,
 			name = COLORS,
 			handler = SCR,
-			disabled = "Disabled",
 			args = {
 				inline1 = {
 					type = "group", order = 1,
@@ -376,7 +373,6 @@ S.options = {
 			handler = SCR,
 			get = "GetValue",
 			set = "SetValueLevel",
-			disabled = "Disabled",
 			args = {
 				inline1 = {
 					type = "group", order = 1,
@@ -441,10 +437,6 @@ local options = S.options
 	---------------
 	--- Methods ---
 	---------------
-
-function SCR:Disabled()
-	return not self:IsEnabled()
-end
 
 function SCR:GetValue(i)
 	return profile[i[#i]]
@@ -521,7 +513,7 @@ do
 		LibSink.args[v].order = i
 	end
 	
-	-- disabled instead of hidden
+	-- disabled instead of hidden; little bit confusing me now
 	LibSink.args.Blizzard.disabled = LibSink.args.Blizzard.hidden
 	LibSink.args.Blizzard.hidden = nil
 end

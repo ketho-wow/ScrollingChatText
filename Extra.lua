@@ -142,8 +142,8 @@ function SCR:BN_FRIEND_INFO_CHANGED()
 		args.chan = FRIENDS_BNET_NAME_COLOR_CODE..BATTLENET_FRIEND.."|r"
 		
 		for i = 1, select(2, BNGetNumFriends()) do
-			local presID, firstname, surname, toonName2, toonID = BNGetFriendInfo(i)
-			local _, toonName, client, realm, _, _, race, class, _, _, level = BNGetToonInfo(presID)
+			local presenceId, firstname, surname, someToonName, toonID = BNGetFriendInfo(i)
+			local _, toonName, client, realm, _, _, race, class, _, _, level = BNGetToonInfo(presenceId)
 			
 			-- avoid misrecognizing characters that share the same name, but are from different servers
 			friendbnet[realm] = friendbnet[realm] or {}
@@ -159,7 +159,7 @@ function SCR:BN_FRIEND_INFO_CHANGED()
 					local fixedLink = firstname:gsub("g", "f")
 					local fullName = firstname.." "..surname
 					-- the "BNplayer" hyperlink might maybe taint whatever it calls on right-click
-					args.name = format("|cff%s|HBNplayer:%s:%s|h%s|r |cff%s%s|h|r", "82C5FF", fixedLink, presID, fullName, S.classCache[S.revLOCALIZED_CLASS_NAMES[class]], toonName)
+					args.name = format("|cff%s|HBNplayer:%s:%s|h%s|r |cff%s%s|h|r", "82C5FF", fixedLink, presenceId, fullName, S.classCache[S.revLOCALIZED_CLASS_NAMES[class]], toonName)
 					
 					args.level = "|cffADFF2F"..level.."|r"
 					

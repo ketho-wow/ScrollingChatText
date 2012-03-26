@@ -31,7 +31,7 @@ end
 	--- Ace3 Initialization ---
 	---------------------------
 
-local slashCmds = {"scr", "scrollingchat", "scrollingchattext"}
+local slashCmds = {"scr", "scrollchat", "scrollingchat", "scrollingchattext"}
 
 function SCR:OnInitialize()
 	if not ChatTypeInfo.SAY.r then
@@ -81,7 +81,7 @@ function SCR:OnInitialize()
 	-- keybind info not yet available (but we're delayed anyway)
 	options.args.options.args.inline1.args.ParentCombatText.desc = format(UI_HIDDEN, GetBindingText(GetBindingKey("TOGGLEUI"), "KEY_"))
 	
-	-- SHOW_COMBAT_TEXT seems to be "1" instead of "0", at loadtime regardless if the option was disabled
+	-- SHOW_COMBAT_TEXT seems to be "1" instead of "0", at loadtime regardless if the option was disabled (but we're delayed anyway again)
 	if profile.sink20OutputSink == "Blizzard" and SHOW_COMBAT_TEXT == "0" then
 		if S.CombatTextEnabled.MikScrollingBattleText then
 			profile.sink20OutputSink = "MikSBT" 
@@ -105,7 +105,7 @@ function SCR:OnEnable()
 	
 	-- Chat events
 	self:RegisterEvent("CHANNEL_UI_UPDATE")
-	self:CHANNEL_UI_UPDATE() -- addon was disabled; user did a /reload
+	self:CHANNEL_UI_UPDATE() -- addon was disabled; or user did a /reload
 	
 	-- Enter/Leave Combat events
 	self:RegisterEvent("PLAYER_REGEN_DISABLED", "PLAYER_REGEN")
@@ -183,28 +183,27 @@ end
 
 local enable = {
 	["1"] = true,
-	["on"] = true,
-	["enable"] = true,
+	on = true,
+	enable = true,
+	load = true,
 }
 
 local disable = {
 	["0"] = true,
-	["off"] = true,
-	["disable"] = true,
+	off = true,
+	disable = true,
+	unload = true,
 }
 
 function SCR:SlashCommand(input)
 	if strtrim(input) == "" then
-		--InterfaceOptionsFrame_OpenToCategory(NAME)
 		ACD:Open("ScrollingChatText_Parent")
 	elseif enable[input] then
 		self:Enable()
 		self:Print("|cffADFF2F"..VIDEO_OPTIONS_ENABLED.."|r")
-		ACR:NotifyChange("ScrollingChatText_Parent")
 	elseif disable[input] then
 		self:Disable()
 		self:Print("|cffFF2424"..VIDEO_OPTIONS_DISABLED.."|r")
-		ACR:NotifyChange("ScrollingChatText_Parent")
 	end
 end
 
@@ -286,7 +285,7 @@ function SCR:CHAT_MSG(event, ...)
 		args.name = "|cff"..S.classCache[class]..sourceName.."|r"
 		
 		if not isChat then
-			-- convert Raid Target icons; FrameXML\ChatFrame.lua L3168 (4.3.0.15050)
+			-- convert Raid Target icons; FrameXML\ChatFrame.lua L3168 (4.3.3.15354)
 			for k in gmatch(msg, "%b{}") do
 				local rt = strlower(gsub(k, "[{}]", ""))
 				if ICON_TAG_LIST[rt] and ICON_LIST[ICON_TAG_LIST[rt]] then
@@ -342,7 +341,7 @@ local linkColor = {
 	currency = "00AA00",
 	enchant = "FFD000",
 	instancelock = "FF8000",
-	item = "FFFFFF", -- don't know much about item caching; in order to get the quality
+	item = "FFFFFF", -- don't know much about item caching; in order to get the specific quality color
 	journal = "66BBFF",
 	quest = "FFFF00",
 	spell = "71D5FF",
@@ -353,8 +352,8 @@ local linkColor = {
 local gsubtrack = {}
 
 function SCR:CHAT_MSG_BN(event, ...)
-	local msg, realName, _, _, _, _, _, _, _, _, _, _, presId = ...
-	local _, toonName, client, _, _, _, _, class = BNGetToonInfo(presId)
+	local msg, realName, _, _, _, _, _, _, _, _, _, _, presenceId = ...
+	local _, toonName, client, _, _, _, _, class = BNGetToonInfo(presenceId)
 	
 	local subevent = event:match("CHAT_MSG_(.+)")
 	local isChat = S.LibSinkChat[profile.sink20OutputSink]
@@ -418,7 +417,7 @@ function SCR:ReplaceArgs(msg, args)
 	for k in gmatch(msg, "%b<>") do
 		local s = strlower(gsub(k, "[<>]", ""))
 		-- escape any inadvertent captures in the msg (error: invalid capture index)
-		-- .. unless if you fed <%1> as argument
+		-- .. unless if you fed <%1> to the formatstring 
 		s = gsub(args[s] or s, "%%", "%%%%")
 		msg = msg:gsub(k, s)
 	end

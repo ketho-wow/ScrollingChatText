@@ -2,7 +2,7 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.07.05					---
---- Version: 0.2 [2012.03.09]			---
+--- Version: 0.3 [2012.03.26]			---
 -------------------------------------------
 --- Curse			http://www.curse.com/addons/wow/scrollingchattext
 --- WoWInterface	http://www.wowinterface.com/downloads/info20827-ScrollingChatText.html
@@ -19,7 +19,7 @@
 -- # LibSink(?) Messages with Links sometimes not even being output to a chat channel
 
 local NAME, S = ...
-S.VERSION = 0.2
+S.VERSION = 0.3
 S.BUILD = "Release"
 
 -- ScrollingChatText abbreviates to SCR in order to avoid confusion with SCT (ScrollingCombatText)
@@ -44,7 +44,7 @@ S.playerClass = select(2, UnitClass("player"))
 
 S.racePath = "Interface\\Glues\\CharacterCreate\\UI-CharacterCreate-Races"
 
-S.RACE_ICON_TCOORDS_256 = { -- GlueXML\CharacterCreate.lua L25 (4.3.0.15050)
+S.RACE_ICON_TCOORDS_256 = { -- GlueXML\CharacterCreate.lua L25 (4.3.3.15354)
 	HUMAN_MALE		= {0, 32, 0, 128},
 	DWARF_MALE		= {32, 64, 0, 128},
 	GNOME_MALE		= {64, 96, 0, 128},
