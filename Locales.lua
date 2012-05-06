@@ -6,7 +6,6 @@ local _, S = ...
 
 local L = {
 	deDE = {
-		OPTION_TAB_MAIN = "Allgemein",
 		OPTION_TAB_EXTRA = "Extras",
 		OPTION_GROUP_LEVELUP = "Stufenzunahme",
 		OPTION_GROUP_SHOW_WHEN = "Anzeigen, wenn ..",
@@ -26,7 +25,6 @@ local L = {
 		WHISPER = "Fl\195\188stern von",
 	},
 	enUS = {
-		OPTION_TAB_MAIN = "Main",
 		OPTION_TAB_EXTRA = "Extra",
 		OPTION_GROUP_LEVELUP = "Level Up",
 		OPTION_GROUP_SHOW_WHEN = "Show when...",
@@ -65,6 +63,8 @@ local L = {
 	esMX = {
 	},
 	frFR = {
+	},
+	itIT = {
 	},
 	koKR = {
 		SAY = "\235\140\128\237\153\148",

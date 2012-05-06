@@ -9,9 +9,8 @@ local L = S.L
 local options = S.options
 local profile
 
-local unpack = unpack
 local pairs, ipairs = pairs, ipairs
-local format, gsub = format, gsub
+local strsub, gsub = strsub, gsub
 
 	-------------------------
 	--- ChatTypeInfo Wait ---
@@ -20,7 +19,7 @@ local format, gsub = format, gsub
 -- ChatTypeInfo does not yet contain the color info, which we need for the defaults
 local f = CreateFrame("Frame")
 
-function f:WaitInitialize()
+function f:WaitInitialize(elapsed)
 	if ChatTypeInfo.SAY.r then
 		SCR:OnInitialize()
 		self:SetScript("OnUpdate", nil)
@@ -30,6 +29,22 @@ end
 	---------------------------
 	--- Ace3 Initialization ---
 	---------------------------
+
+local appKey = {
+	"ScrollingChatText_Main",
+	"ScrollingChatText_Advanced",
+	"ScrollingChatText_Colors",
+	"ScrollingChatText_Extra",
+}
+
+-- using ipairs to iterate through appKey by index
+-- but still want to be able to use key-value tables
+local appValue = {
+	ScrollingChatText_Main = options.args.main,
+	ScrollingChatText_Advanced = options.args.advanced,
+	ScrollingChatText_Colors = options.args.colors,
+	ScrollingChatText_Extra = options.args.extra,
+}
 
 local slashCmds = {"scr", "scrollchat", "scrollingchat", "scrollingchattext"}
 
@@ -51,24 +66,19 @@ function SCR:OnInitialize()
 	self:RefreshDB()
 	
 	ACR:RegisterOptionsTable("ScrollingChatText_Parent", options)
-	ACR:RegisterOptionsTable("ScrollingChatText_Main", options.args.main)
-	ACR:RegisterOptionsTable("ScrollingChatText_Options", options.args.options)
-	ACR:RegisterOptionsTable("ScrollingChatText_Colors", options.args.colors)
-	ACR:RegisterOptionsTable("ScrollingChatText_Extra", options.args.extra)
-	
-	-- setup profiles, change order
-	options.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
-	ACR:RegisterOptionsTable("ScrollingChatText_Profiles", options.args.profiles)
-	options.args.profiles.order = 5
-	
 	ACD:AddToBlizOptions("ScrollingChatText_Parent", NAME)
-	ACD:AddToBlizOptions("ScrollingChatText_Main", options.args.main.name, NAME)
-	ACD:AddToBlizOptions("ScrollingChatText_Options", options.args.options.name, NAME)
-	ACD:AddToBlizOptions("ScrollingChatText_Colors", options.args.colors.name, NAME)
-	ACD:AddToBlizOptions("ScrollingChatText_Extra", options.args.extra.name, NAME)
-	ACD:AddToBlizOptions("ScrollingChatText_Profiles", options.args.profiles.name, NAME)
-	
 	ACD:SetDefaultSize("ScrollingChatText_Parent", 700, 570)
+	
+	for _, v in ipairs(appKey) do
+		ACR:RegisterOptionsTable(v, appValue[v])
+		ACD:AddToBlizOptions(v, appValue[v].name, NAME)
+	end
+	
+	-- setup profiles now, self reminder: requires db to be defined first
+	options.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
+	options.args.profiles.order = 5
+	ACR:RegisterOptionsTable("ScrollingChatText_Profiles", options.args.profiles)
+	ACD:AddToBlizOptions("ScrollingChatText_Profiles", options.args.profiles.name, NAME)
 	
 	for _, v in ipairs(slashCmds) do
 		self:RegisterChatCommand(v, "SlashCommand")
@@ -79,7 +89,7 @@ function SCR:OnInitialize()
 	end
 	
 	-- keybind info not yet available (but we're delayed anyway)
-	options.args.options.args.inline1.args.ParentCombatText.desc = format(UI_HIDDEN, GetBindingText(GetBindingKey("TOGGLEUI"), "KEY_"))
+	options.args.advanced.args.inline1.args.ParentCombatText.desc = format(UI_HIDDEN, GetBindingText(GetBindingKey("TOGGLEUI"), "KEY_"))
 	
 	-- SHOW_COMBAT_TEXT seems to be "1" instead of "0", at loadtime regardless if the option was disabled (but we're delayed anyway again)
 	if profile.sink20OutputSink == "Blizzard" and SHOW_COMBAT_TEXT == "0" then
@@ -104,18 +114,19 @@ function SCR:OnEnable()
 	if not profile then return end -- Initialization not yet done
 	
 	-- Chat events
-	self:RegisterEvent("CHANNEL_UI_UPDATE")
-	self:CHANNEL_UI_UPDATE() -- addon was disabled; or user did a /reload
-	
-	-- Enter/Leave Combat events
-	self:RegisterEvent("PLAYER_REGEN_DISABLED", "PLAYER_REGEN")
-	self:RegisterEvent("PLAYER_REGEN_ENABLED", "PLAYER_REGEN")
-	combatState = UnitAffectingCombat("player")
-	
 	for method, tbl in pairs(S.events) do
 		for _, event in ipairs(tbl) do
 			self:RegisterEvent(event, method)
 		end
+	end
+	
+	-- Channel event
+	self:RegisterEvent("CHANNEL_UI_UPDATE")
+	self:CHANNEL_UI_UPDATE() -- addon was disabled; or user did a /reload
+	
+	-- Level events
+	for _, v in pairs(S.LevelEvents) do
+		self:RegisterEvent(v)
 	end
 	
 	-- support [Class Colors] by Phanx
@@ -123,10 +134,8 @@ function SCR:OnEnable()
 		CUSTOM_CLASS_COLORS:RegisterCallback("WipeCache", self)
 	end
 	
-	-- Level events
-	for _, v in pairs(S.LevelEvents) do
-		self:RegisterEvent(v)
-	end
+	-- init combat state
+	combatState = UnitAffectingCombat("player")
 	
 	-- this kinda defeats the purpose of registering/unregistering events according to options <.<
 	self:ScheduleRepeatingTimer(function()
@@ -143,7 +152,7 @@ function SCR:OnEnable()
 			ShowFriends() -- fires FRIENDLIST_UPDATE
 		end
 		-- BN_FRIEND_INFO_CHANGED doesn't fire on login; but it does on actual levelups; just to be sure
-		if profile.LevelFriendBnet then
+		if profile.LevelRealID then
 			self:BN_FRIEND_INFO_CHANGED()
 		end
 	end, 11)
@@ -196,14 +205,14 @@ local disable = {
 }
 
 function SCR:SlashCommand(input)
-	if strtrim(input) == "" then
-		ACD:Open("ScrollingChatText_Parent")
-	elseif enable[input] then
+	if enable[input] then
 		self:Enable()
 		self:Print("|cffADFF2F"..VIDEO_OPTIONS_ENABLED.."|r")
 	elseif disable[input] then
 		self:Disable()
 		self:Print("|cffFF2424"..VIDEO_OPTIONS_DISABLED.."|r")
+	else
+		ACD:Open("ScrollingChatText_Parent")
 	end
 end
 
@@ -251,9 +260,57 @@ local function CombatFilter()
 	end
 end
 
-local args = {}
-local split = {255, 155, 55}
+local space, sorted = {}, {}
 
+local function SplitMessage(msg)
+	-- results might vary depending on usage of wide/thin characters (e.g. I vs W),
+	-- word placement and char length of icon/time/name/channel
+	local msglen = strlen(gsub(msg, "|c.-(%[.-%]).-|r", "%1"))
+	
+	if msglen > 60 then
+		
+		wipe(space)
+		-- what happened to string.gfind? :(
+		-- avoid letting strfind choke on () and []
+		for c in gmatch(msg, "[^%p]%s+[^%p]") do
+			-- fails when there are multiple instances of the same capture
+			-- e.g. "o g" in "go go go go" or "so good so gray"
+			local a, b = strfind(msg, c)
+			space[a+1] = true
+			space[b-1] = true
+		end
+		
+		wipe(sorted)
+		for k in pairs(space) do
+			tinsert(sorted, k)
+		end
+		sort(sorted)
+		
+		local first, second
+		if msglen > 160 then
+			-- there is room to improve since I don't even know what I'm doing. really
+			first = (msglen / 3) - 25
+			second = (first * 2) + 25
+		else
+			first = (msglen / 2) - 20
+		end
+		
+		for _, v in pairs(sorted) do
+			if first and v > first then
+				msg = strsub(msg, 1, v).."\n"..strsub(msg, v+1)
+				first = nil
+			elseif second and v > second then
+				-- account for characters being moved +1 to the right
+				msg = strsub(msg, 1, v+1).."\n"..strsub(msg, v+2)
+				second = nil
+				break
+			end
+		end
+	end
+	return msg
+end
+
+local args = {}
 local fonts = LSM:HashTable(LSM.MediaType.FONT)
 
 local ICON_LIST = ICON_LIST
@@ -286,30 +343,23 @@ function SCR:CHAT_MSG(event, ...)
 		
 		if not isChat then
 			-- convert Raid Target icons; FrameXML\ChatFrame.lua L3168 (4.3.3.15354)
-			for k in gmatch(msg, "%b{}") do
-				local rt = strlower(gsub(k, "[{}]", ""))
+			for c in gmatch(msg, "%b{}") do
+				local rt = strlower(gsub(c, "[{}]", ""))
 				if ICON_TAG_LIST[rt] and ICON_LIST[ICON_TAG_LIST[rt]] then
-					msg = msg:gsub(k, ICON_LIST[ICON_TAG_LIST[rt]].."0|t")
+					msg = msg:gsub(c, ICON_LIST[ICON_TAG_LIST[rt]].."0|t")
 				end
 			end
 		end
 		
-		-- this rather newbie approach might break hyperlinks, RT icons, and UTF-8 characters from foreign languages
-		-- the corresponding option is off by default; results might vary depending on usage of wide/thin characters (e.g. I vs W)
-		if profile.Split and profile.sink20OutputSink == "Blizzard" then
-			local msglen = strlen(gsub(msg, "|c.-(%[.-%]).-|r", "%1"))
-			for _, v in ipairs(split) do
-				if msglen > v then
-					msg = strsub(msg, 1, v).."\n"..strsub(msg, v+1)
-				end
-			end
+		if profile.sink20OutputSink == "Blizzard" and profile.Split then
+			msg = SplitMessage(msg)
 		end
 		
 		-- try to continue the coloring if broken by hyperlinks; this is kinda ugly I guess
 		msg = msg:gsub("|r", "|r|cff"..chanColor)
 		args.msg = "|cff"..chanColor..msg.."|r"
 		
-		self:Output(args, profile.Message, profile.color[subevent])
+		self:Output(profile.Message, args, profile.color[subevent])
 	end
 end
 
@@ -332,7 +382,7 @@ function SCR:CHAT_MSG_ACH(event, ...)
 		local color = profile.color[subevent]
 		sourceName = profile.TrimRealm and sourceName:match("(.-)%-") or sourceName -- remove realm names
 		local name = "|cffFFFFFF[|r|cff"..S.classCache[class]..sourceName.."|r|cffFFFFFF]|r"
-		self:Pour(icon.." "..msg:format(name), color.r, color.g, color.b, fonts[profile.Font], profile.FontSize)
+		self:Pour(icon.." "..msg:format(name), color.r, color.g, color.b, fonts[profile.FontWidget], profile.FontSize)
 	end
 end
 
@@ -384,19 +434,23 @@ function SCR:CHAT_MSG_BN(event, ...)
 				end
 			end
 			
+			if profile.sink20OutputSink == "Blizzard" and profile.Split then
+				msg = SplitMessage(msg)
+			end
+			
 			wipe(gsubtrack)
 			-- color hyperlinks; coloring is omitted in Real ID chat
 			for k in string.gmatch(msg, "|H.-|h.-|h") do
 				local linkType = k:match("|H(.-):")
 				if not gsubtrack[linkColor[linkType]] then
-					gsubtrack[linkColor[linkType]] = true -- am I using gsub correctly like this?
+					gsubtrack[linkColor[linkType]] = true -- substituted all instances of the linkType
 					msg = msg:gsub("|H"..linkType..":.-|h.-|h", "|cff"..linkColor[linkType].."%1|r|cff"..chanColor) -- continue coloring
 				end
 			end
 			
 			args.msg = "|cff"..chanColor..msg.."|r"
 			
-			self:Output(args, profile.Message, profile.color[subevent])
+			self:Output(profile.Message, args, profile.color[subevent])
 		elseif client == BNET_CLIENT_SC2 or client == BNET_CLIENT_D3 then
 			args.icon = (profile.IconSize > 1 and not isChat) and "|TInterface\\ChatFrame\\UI-ChatIcon-"..S.clients[client]..":14:14:0:-1|t" or ""
 			
@@ -408,17 +462,21 @@ function SCR:CHAT_MSG_BN(event, ...)
 			
 			args.msg = "|cff"..chanColor..msg.."|r"
 			
-			self:Output(args, profile.Message, profile.color[subevent])
+			self:Output(profile.Message, args, profile.color[subevent])
 		end
 	end
 end
 
 function SCR:ReplaceArgs(msg, args)
 	for k in gmatch(msg, "%b<>") do
+		-- remove <>, make case insensitive
 		local s = strlower(gsub(k, "[<>]", ""))
-		-- escape any inadvertent captures in the msg (error: invalid capture index)
-		-- .. unless if you fed <%1> to the formatstring 
-		s = gsub(args[s] or s, "%%", "%%%%")
+		
+		-- escape special characters
+		-- a maybe better alternative to %p is "[%%%.%-%+%?%*%^%$%(%)%[%]%{%}]"
+		s = gsub(args[s] or s, "(%p)", "%%%1")
+		k = gsub(k, "(%p)", "%%%1")
+		
 		msg = msg:gsub(k, s)
 	end
 	return msg
@@ -426,12 +484,12 @@ end
 
 local nokey = {}
 
-function SCR:Output(args, msg, color)
+function SCR:Output(msg, args, color)
 	if not CombatFilter() then return end
 	
 	args.time = S.GetTimestamp()
 	msg = self:ReplaceArgs(msg, args)
 	
 	color = profile.ColorMessage and color or nokey
-	self:Pour(msg, color.r, color.g, color.b, fonts[profile.Font], profile.FontSize)
+	self:Pour(msg, color.r, color.g, color.b, fonts[profile.FontWidget], profile.FontSize)
 end

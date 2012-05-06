@@ -1,5 +1,5 @@
 ## Interface: 40300
-## Version: 0.3
+## Version: 0.4
 ## Title: ScrollingChatText
 ## Notes: Shows Chat as Combat Text
 ## Author: Ketho @ EU-Boulderfist
@@ -19,14 +19,10 @@ Libs\AceConsole-3.0\AceConsole-3.0.xml
 Libs\AceGUI-3.0\AceGUI-3.0.xml
 Libs\AceConfig-3.0\AceConfig-3.0.xml
 Libs\LibSharedMedia-3.0\lib.xml
-#@end-no-lib-strip@
-
-Libs\AceGUI-3.0-SharedMediaWidgets\widget.xml
-
-#@no-lib-strip@
 Libs\LibSink-2.0\lib.xml
 #@end-no-lib-strip@
 
+Libs\AceGUI-3.0-SharedMediaWidgets\widget.xml
 Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
 
 Locales.lua

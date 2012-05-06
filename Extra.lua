@@ -8,8 +8,7 @@ function SCR:RefreshDB3()
 	profile = self.db.profile
 end
 
-local unpack = unpack
-local format, gsub = format, gsub
+local format = format
 local GetGuildRosterInfo = GetGuildRosterInfo
 
 	---------------
@@ -32,15 +31,14 @@ function SCR:RefreshLevelEvents()
 	end
 end
 
-local args, cd = {}, {0, 0, 0, 0}
-local group, guild, friend, friendbnet = {}, {}, {}, {}
-local friendColor = {r = 0.51, g = 0.77, b = 1}
-
 	-------------
 	--- Group ---
 	-------------
 
-function SCR:UNIT_LEVEL(unit)
+local args, cd = {}, {0, 0, 0, 0}
+local group, guild, friend, realid = {}, {}, {}, {}
+
+function SCR:UNIT_LEVEL()
 	if time() > cd[1] then
 		cd[1] = time() + 2
 		local isChat = S.LibSinkChat[profile.sink20OutputSink]
@@ -72,7 +70,7 @@ function SCR:UNIT_LEVEL(unit)
 					args.name = (not isChat) and format("|cff%s|Hplayer:%s|h%s|h|r", classColor, name..(realm and "-"..realm or ""), name) or name
 					
 					args.level = "|cffADFF2F"..level.."|r"
-					self:Output(args, profile.LevelMessage, color)
+					self:Output(profile.LevelMessage, args, color)
 				end
 				group[guid] = level
 			end
@@ -98,7 +96,7 @@ function SCR:GUILD_ROSTER_UPDATE()
 				args.icon = (profile.IconSize > 1 and not isChat) and classIcon or ""
 				args.name = (not isChat) and format("|cff%s|Hplayer:%s|h%s|h|r", S.classCache[class], name, name) or name
 				args.level = "|cffADFF2F"..level.."|r"
-				self:Output(args, profile.LevelMessage, profile.color.GUILD)
+				self:Output(profile.LevelMessage, args, profile.color.GUILD)
 			end
 			guild[name] = level
 		end
@@ -108,6 +106,8 @@ end
 	---------------
 	--- Friends ---
 	---------------
+
+local friendColor = {r = 0.51, g = 0.77, b = 1}
 
 function SCR:FRIENDLIST_UPDATE()
 	if time() > cd[3] then
@@ -123,7 +123,7 @@ function SCR:FRIENDLIST_UPDATE()
 					args.icon = (profile.IconSize > 1 and not isChat) and classIcon or ""
 					args.name = (not isChat) and format("|cff%s|Hplayer:%s|h%s|h|r", S.classCache[S.revLOCALIZED_CLASS_NAMES[class]], name, name) or name
 					args.level = "|cffADFF2F"..level.."|r"
-					self:Output(args, profile.LevelMessage, friendColor)
+					self:Output(profile.LevelMessage, args, friendColor)
 				end
 				friend[name] = level
 			end
@@ -131,9 +131,9 @@ function SCR:FRIENDLIST_UPDATE()
 	end
 end
 
-	-----------------------
-	--- Real ID Friends ---
-	-----------------------
+	---------------
+	--- Real ID ---
+	---------------
 
 function SCR:BN_FRIEND_INFO_CHANGED()
 	if time() > cd[4] then
@@ -146,12 +146,12 @@ function SCR:BN_FRIEND_INFO_CHANGED()
 			local _, toonName, client, realm, _, _, race, class, _, _, level = BNGetToonInfo(presenceId)
 			
 			-- avoid misrecognizing characters that share the same name, but are from different servers
-			friendbnet[realm] = friendbnet[realm] or {}
-			local fbnet = friendbnet[realm]
+			realid[realm] = realid[realm] or {}
+			local bnet = realid[realm]
 			
 			if client == BNET_CLIENT_WOW then
 				level = tonumber(level) -- why is level a string type
-				if toonName and fbnet[toonName] and fbnet[toonName] > 0 and level and level > fbnet[toonName] then
+				if toonName and bnet[toonName] and bnet[toonName] > 0 and level and level > bnet[toonName] then
 					local classIcon = S.GetClassIcon(S.revLOCALIZED_CLASS_NAMES[class], 1, 1)
 					args.icon = (profile.IconSize > 1 and not isChat) and classIcon or ""
 					
@@ -163,9 +163,9 @@ function SCR:BN_FRIEND_INFO_CHANGED()
 					
 					args.level = "|cffADFF2F"..level.."|r"
 					
-					self:Output(args, profile.LevelMessage, profile.color.BN_WHISPER)
+					self:Output(profile.LevelMessage, args, profile.color.BN_WHISPER)
 				end
-				fbnet[toonName] = level
+				bnet[toonName] = level
 			end
 		end
 	end

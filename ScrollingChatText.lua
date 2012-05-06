@@ -2,7 +2,7 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.07.05					---
---- Version: 0.3 [2012.03.26]			---
+--- Version: 0.4 [2012.05.06]			---
 -------------------------------------------
 --- Curse			http://www.curse.com/addons/wow/scrollingchattext
 --- WoWInterface	http://www.wowinterface.com/downloads/info20827-ScrollingChatText.html
@@ -19,7 +19,7 @@
 -- # LibSink(?) Messages with Links sometimes not even being output to a chat channel
 
 local NAME, S = ...
-S.VERSION = 0.3
+S.VERSION = 0.4
 S.BUILD = "Release"
 
 -- ScrollingChatText abbreviates to SCR in order to avoid confusion with SCT (ScrollingCombatText)
@@ -150,6 +150,11 @@ S.events = {
 		--"CHAT_MSG_BN_WHISPER_INFORM", -- self
 		"CHAT_MSG_BN_CONVERSATION",
 	},
+	-- entering/leaving combat
+	PLAYER_REGEN = {
+		"PLAYER_REGEN_DISABLED",
+		"PLAYER_REGEN_ENABLED",
+	}
 }
 
 -- profile settings
@@ -208,7 +213,7 @@ S.levelremap = {
 	LevelRaid = "UNIT_LEVEL",
 	LevelGuild = "GUILD_ROSTER_UPDATE",
 	LevelFriend = "FRIENDLIST_UPDATE",
-	LevelFriendBnet = "BN_FRIEND_INFO_CHANGED",
+	LevelRealID = "BN_FRIEND_INFO_CHANGED",
 }
 
 -- determine if any of the LevelGroup options are enabled
@@ -258,7 +263,6 @@ for i, v in ipairs(S.timestamps) do
 end
 
 function S.GetTimestamp()
-	local c = profile.color.TIMESTAMP
 	return (profile.Timestamp > 1) and "|cff"..S.chanCache.TIMESTAMP..BetterDate(S.timestamps[profile.Timestamp], time()).."|r" or ""
 end
 
@@ -280,19 +284,6 @@ S.clients = { -- also used as remap for SC2/D3 icon
 	[BNET_CLIENT_WOW] = "WOW",
 	[BNET_CLIENT_SC2] = "SC2",
 	[BNET_CLIENT_D3] = "D3",
-}
-
-	--------------------
-	--- Message Args ---
-	--------------------
-
-S.validateMsg = {
-	icon = true,
-	time = true,
-	chan = true,
-	name = true,
-	msg = true,
-	level = true,
 }
 
 	--------------------------

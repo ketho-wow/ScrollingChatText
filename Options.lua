@@ -11,7 +11,6 @@ function SCR:RefreshDB2()
 end
 
 local pairs, ipairs = pairs, ipairs
-local format, gsub = format, gsub
 
 	--------------------------
 	--- Example Timestamps ---
@@ -69,13 +68,14 @@ S.defaults = {
 		
 		FilterSelf = true,
 		TrimRealm = true,
+		Split = true,
 		
 		InCombat = true,
 		NotInCombat = true,
 		
 		Timestamp = 6, -- 15:27
 		IconSize = 16,
-		Font = LSM:GetDefault(LSM.MediaType.FONT),
+		FontWidget = LSM:GetDefault(LSM.MediaType.FONT),
 		FontSize = 16,
 		
 		color = {
@@ -120,13 +120,11 @@ local maxLevel = MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()]
 S.options = {
 	type = "group",
 	childGroups = "tab",
-	get = "GetValue",
-	set = "SetValue",
 	name = format("%s |cffADFF2Fv%s|r", NAME, S.VERSION),
 	args = {
 		main = {
 			type = "group", order = 1,
-			name = L.OPTION_TAB_MAIN,
+			name = GAMEOPTIONS_MENU,
 			handler = SCR,
 			get = "GetValue",
 			set = "SetValue",
@@ -231,9 +229,9 @@ S.options = {
 				},
 			},
 		},
-		options = {
+		advanced = {
 			type = "group", order = 2,
-			name = GAMEOPTIONS_MENU,
+			name = ADVANCED_LABEL,
 			handler = SCR,
 			get = "GetValue",
 			set = "SetValue",
@@ -305,10 +303,10 @@ S.options = {
 					name = " "..L.OPTION_ICON_SIZE,
 				},
 				newline = {type = "description", order = 5, name = ""},
-				Font = {
+				FontWidget = {
 					type = "select", order = 6,
 					descStyle = "",
-					values = LSM:HashTable("font"),
+					values = LSM:HashTable(LSM.MediaType.FONT),
 					dialogControl = "LSM30_Font",
 					name = " "..L.OPTION_FONT.." |cffFF0000(NYI)|r",
 				},
@@ -399,7 +397,7 @@ S.options = {
 							width = "full", descStyle = "",
 							name = FRIENDS_WOW_NAME_COLOR_CODE..FRIENDS.."|r",
 						},
-						LevelFriendBnet = {
+						LevelRealID = {
 							type = "toggle", order = 5,
 							width = "full", descStyle = "",
 							name = FRIENDS_BNET_NAME_COLOR_CODE..BATTLENET_FRIEND.."|r",
@@ -412,7 +410,7 @@ S.options = {
 					name = "",
 					set = "SetMessage",
 				},
-				Preview = {
+				LevelPreview = {
 					type = "description", order = 3,
 					fontSize = "large",
 					name = function()
@@ -421,7 +419,7 @@ S.options = {
 						args.icon = (profile.IconSize > 1) and raceIcon..classIcon or ""
 						args.time = S.GetTimestamp()
 						args.chan = GetNumRaidMembers() > 0 and "|cffFF7F00"..RAID.."|r" or "|cffA8A8FF"..PARTY.."|r"
-						args.name = "|cff"..S.classCache[S.playerClass]..S.playerName.."|r"
+						args.name = "|cff"..S.classCache[S.playerClass]..PLAYER.."|r"
 						local playerLevel = UnitLevel("player")
 						args.level = "|cffADFF2F"..playerLevel + (playerLevel == maxLevel and 0 or 1).."|r"
 						return "  "..SCR:ReplaceArgs(profile.LevelMessage, args)
@@ -483,12 +481,6 @@ end
 
 function SCR:SetMessage(i, v)
 	profile[i[#i]] = (v:trim() == "") and defaults.profile[i[#i]] or v
-	for k in gmatch(v, "%b<>") do
-		local s = strlower(gsub(k, "[<>]", ""))
-		if not S.validateMsg[s] then
-			self:Print(ERROR_CAPS..": |cffFFFF00"..k.."|r")
-		end
-	end
 end
 
 	----------------------------
@@ -502,7 +494,7 @@ do
 	
 	-- use "Blizzard FCT" translation for option, and then color the name blue or gray in LibSink options
 	local nameBlizzard = LibSink.args.Blizzard.name
-	options.args.options.args.inline1.args.Split.name = "|cff71D5FF["..nameBlizzard.."]|r "..L.OPTION_TRIM_MESSAGE
+	options.args.advanced.args.inline1.args.Split.name = "|cff71D5FF["..nameBlizzard.."]|r "..L.OPTION_TRIM_MESSAGE
 	
 	local funcBlizzard = function()
 		return "|cff"..(SHOW_COMBAT_TEXT == "1" and "71D5FF" or "979797")..nameBlizzard.."|r"
@@ -518,19 +510,19 @@ do
 	LibSink.args.Blizzard.hidden = nil
 end
 
-	---------------
-	--- Options ---
-	---------------
+	----------------
+	--- Advanced ---
+	----------------
 
 do
-	local iconSize = options.args.options.args.IconSize.values
+	local iconSize = options.args.advanced.args.IconSize.values
 	
 	for i = 8, 32, 2 do
 		iconSize[i] = i
 	end
 	iconSize[1] = NONE
 	
-	local fontSize = options.args.options.args.FontSize.values
+	local fontSize = options.args.advanced.args.FontSize.values
 	
 	for i = 2, 32, 2 do
 		fontSize[i] = i
