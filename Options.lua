@@ -301,6 +301,11 @@ S.options = {
 					descStyle = "",
 					values = {},
 					name = " "..L.OPTION_ICON_SIZE,
+					set = function(i, v)
+						profile[i[#i]] = v
+						wipe(S.raceIconCache)
+						wipe(S.classIconCache)
+					end,
 				},
 				newline = {type = "description", order = 5, name = ""},
 				FontWidget = {

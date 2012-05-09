@@ -267,7 +267,7 @@ local function SplitMessage(msg)
 	-- word placement and char length of icon/time/name/channel
 	local msglen = strlen(gsub(msg, "|c.-(%[.-%]).-|r", "%1"))
 	
-	if msglen > 60 then
+	if msglen > 75 then
 		
 		wipe(space)
 		-- what happened to string.gfind? :(

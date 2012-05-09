@@ -2,7 +2,7 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.07.05					---
---- Version: 0.4 [2012.05.06]			---
+--- Version: 0.5 [2012.05.09]			---
 -------------------------------------------
 --- Curse			http://www.curse.com/addons/wow/scrollingchattext
 --- WoWInterface	http://www.wowinterface.com/downloads/info20827-ScrollingChatText.html
@@ -19,7 +19,7 @@
 -- # LibSink(?) Messages with Links sometimes not even being output to a chat channel
 
 local NAME, S = ...
-S.VERSION = 0.4
+S.VERSION = 0.5
 S.BUILD = "Release"
 
 -- ScrollingChatText abbreviates to SCR in order to avoid confusion with SCT (ScrollingCombatText)
@@ -37,87 +37,6 @@ local format = format
 
 S.playerName = UnitName("player")
 S.playerClass = select(2, UnitClass("player"))
-
-	------------------
-	--- Race Icons ---
-	------------------
-
-S.racePath = "Interface\\Glues\\CharacterCreate\\UI-CharacterCreate-Races"
-
-S.RACE_ICON_TCOORDS_256 = { -- GlueXML\CharacterCreate.lua L25 (4.3.3.15354)
-	HUMAN_MALE		= {0, 32, 0, 128},
-	DWARF_MALE		= {32, 64, 0, 128},
-	GNOME_MALE		= {64, 96, 0, 128},
-	NIGHTELF_MALE	= {96, 128, 0, 128},
-
-	TAUREN_MALE		= {0, 32, 128, 256},
-	SCOURGE_MALE	= {32, 64, 128, 256},
-	TROLL_MALE		= {64, 96, 128, 256},
-	ORC_MALE		= {96, 128, 128, 256},
-
-	HUMAN_FEMALE	= {0, 32, 256, 384},  
-	DWARF_FEMALE	= {32, 64, 256, 384},
-	GNOME_FEMALE	= {64, 96, 256, 384},
-	NIGHTELF_FEMALE	= {96, 128, 256, 384},
-
-	TAUREN_FEMALE	= {0, 32, 384, 512},   
-	SCOURGE_FEMALE	= {32, 64, 384, 512}, 
-	TROLL_FEMALE	= {64, 96, 384, 512}, 
-	ORC_FEMALE		= {96, 128, 384, 512}, 
-
-	BLOODELF_MALE	= {128, 160, 128, 256},
-	BLOODELF_FEMALE	= {128, 160, 384, 512}, 
-
-	DRAENEI_MALE	= {128, 160, 0, 128},
-	DRAENEI_FEMALE	= {128, 160, 256, 384}, 
-
-	GOBLIN_MALE		= {160, 192, 128, 256},
-	GOBLIN_FEMALE	= {160, 192, 384, 512},
-
-	WORGEN_MALE		= {160, 192, 0, 128},
-	WORGEN_FEMALE	= {160, 192, 256, 384},
-}
-
-S.sexremap = {nil, "MALE", "FEMALE"}
-
-function S.GetRaceIcon(k, x, y)
-	local raceCoords = strjoin(":", unpack(S.RACE_ICON_TCOORDS_256[k]))
-	local raceIcon = format("|T%s:%s:%s:"..x..":"..y..":256:512:%s|t", S.racePath, profile.IconSize, profile.IconSize, raceCoords)
-	return raceIcon
-end
-
-	-------------------
-	--- Class Icons ---
-	-------------------
-
-S.classPath = "Interface\\Glues\\CharacterCreate\\UI-CharacterCreate-Classes"
-
-S.CLASS_ICON_TCOORDS_256 = CopyTable(CLASS_ICON_TCOORDS)
-
-for k1, v1 in pairs(S.CLASS_ICON_TCOORDS_256) do
-	for k2, v2 in ipairs(v1) do
-		S.CLASS_ICON_TCOORDS_256[k1][k2] = v2*256
-	end
-end
-
-function S.GetClassIcon(k, x, y)
-	local classCoords = strjoin(":", unpack(S.CLASS_ICON_TCOORDS_256[k]))
-	local classIcon = format("|T%s:%s:%s:"..x..":"..y..":256:256:%s|t", S.classPath, profile.IconSize, profile.IconSize, classCoords)
-	return classIcon
-end
-
-	--------------------
-	--- Class Names  ---
-	--------------------
-
--- for CHAT_MSG_BN_WHISPER support
-S.revLOCALIZED_CLASS_NAMES = {}
-for k, v in pairs(LOCALIZED_CLASS_NAMES_MALE) do
-	S.revLOCALIZED_CLASS_NAMES[v] = k
-end
-for k, v in pairs(LOCALIZED_CLASS_NAMES_FEMALE) do
-	S.revLOCALIZED_CLASS_NAMES[v] = k
-end
 
 	--------------
 	--- Events ---
@@ -242,6 +161,98 @@ end})
 function SCR:WipeCache()
 	wipe(S.classCache)
 	wipe(S.chanCache)
+end
+
+	------------------
+	--- Race Icons ---
+	------------------
+
+S.racePath = "Interface\\Glues\\CharacterCreate\\UI-CharacterCreate-Races"
+
+S.RACE_ICON_TCOORDS_256 = { -- GlueXML\CharacterCreate.lua L25 (4.3.3.15354)
+	HUMAN_MALE		= {0, 32, 0, 128},
+	DWARF_MALE		= {32, 64, 0, 128},
+	GNOME_MALE		= {64, 96, 0, 128},
+	NIGHTELF_MALE	= {96, 128, 0, 128},
+
+	TAUREN_MALE		= {0, 32, 128, 256},
+	SCOURGE_MALE	= {32, 64, 128, 256},
+	TROLL_MALE		= {64, 96, 128, 256},
+	ORC_MALE		= {96, 128, 128, 256},
+
+	HUMAN_FEMALE	= {0, 32, 256, 384},  
+	DWARF_FEMALE	= {32, 64, 256, 384},
+	GNOME_FEMALE	= {64, 96, 256, 384},
+	NIGHTELF_FEMALE	= {96, 128, 256, 384},
+
+	TAUREN_FEMALE	= {0, 32, 384, 512},   
+	SCOURGE_FEMALE	= {32, 64, 384, 512}, 
+	TROLL_FEMALE	= {64, 96, 384, 512}, 
+	ORC_FEMALE		= {96, 128, 384, 512}, 
+
+	BLOODELF_MALE	= {128, 160, 128, 256},
+	BLOODELF_FEMALE	= {128, 160, 384, 512}, 
+
+	DRAENEI_MALE	= {128, 160, 0, 128},
+	DRAENEI_FEMALE	= {128, 160, 256, 384}, 
+
+	GOBLIN_MALE		= {160, 192, 128, 256},
+	GOBLIN_FEMALE	= {160, 192, 384, 512},
+
+	WORGEN_MALE		= {160, 192, 0, 128},
+	WORGEN_FEMALE	= {160, 192, 256, 384},
+}
+
+S.sexremap = {nil, "MALE", "FEMALE"}
+
+S.raceIconCache = setmetatable({}, {__index = function(t, k)
+	local coords = strjoin(":", unpack(S.RACE_ICON_TCOORDS_256[k]))
+	local v = format("|T%s:%s:%s:%%s:%%s:256:512:%s|t", S.racePath, profile.IconSize, profile.IconSize, coords)
+	rawset(t, k, v)
+	return v
+end})
+
+-- x and y vary so we can't cache that
+function S.GetRaceIcon(k, x, y)
+	return format(S.raceIconCache[k], x, y)
+end
+
+	-------------------
+	--- Class Icons ---
+	-------------------
+
+S.classPath = "Interface\\Glues\\CharacterCreate\\UI-CharacterCreate-Classes"
+
+S.CLASS_ICON_TCOORDS_256 = CopyTable(CLASS_ICON_TCOORDS)
+
+for k1, v1 in pairs(S.CLASS_ICON_TCOORDS_256) do
+	for k2, v2 in ipairs(v1) do
+		S.CLASS_ICON_TCOORDS_256[k1][k2] = v2*256
+	end
+end
+
+S.classIconCache = setmetatable({}, {__index = function(t, k)
+	local coords = strjoin(":", unpack(S.CLASS_ICON_TCOORDS_256[k]))
+	local v = format("|T%s:%s:%s:%%s:%%s:256:256:%s|t", S.classPath, profile.IconSize, profile.IconSize, coords)
+	rawset(t, k, v)
+	return v
+end})
+
+function S.GetClassIcon(k, x, y)
+	return format(S.classIconCache[k], x, y)
+end
+
+	--------------------
+	--- Class Names  ---
+	--------------------
+
+-- for CHAT_MSG_BN_WHISPER support
+S.revLOCALIZED_CLASS_NAMES = {}
+for k, v in pairs(LOCALIZED_CLASS_NAMES_MALE) do
+	S.revLOCALIZED_CLASS_NAMES[v] = k
+end
+for k, v in pairs(LOCALIZED_CLASS_NAMES_FEMALE) do
+	S.revLOCALIZED_CLASS_NAMES[v] = k
 end
 
 	------------------
