@@ -69,16 +69,16 @@ function SCR:OnInitialize()
 	ACD:AddToBlizOptions("ScrollingChatText_Parent", NAME)
 	ACD:SetDefaultSize("ScrollingChatText_Parent", 700, 570)
 	
+	-- setup profiles now, self reminder: requires db to be already defined
+	options.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
+	options.args.profiles.order = 5
+	tinsert(appKey, "ScrollingChatText_Profiles")
+	appValue.ScrollingChatText_Profiles = options.args.profiles
+	
 	for _, v in ipairs(appKey) do
 		ACR:RegisterOptionsTable(v, appValue[v])
 		ACD:AddToBlizOptions(v, appValue[v].name, NAME)
 	end
-	
-	-- setup profiles now, self reminder: requires db to be defined first
-	options.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
-	options.args.profiles.order = 5
-	ACR:RegisterOptionsTable("ScrollingChatText_Profiles", options.args.profiles)
-	ACD:AddToBlizOptions("ScrollingChatText_Profiles", options.args.profiles.name, NAME)
 	
 	for _, v in ipairs(slashCmds) do
 		self:RegisterChatCommand(v, "SlashCommand")
@@ -211,6 +211,8 @@ function SCR:SlashCommand(input)
 	elseif disable[input] then
 		self:Disable()
 		self:Print("|cffFF2424"..VIDEO_OPTIONS_DISABLED.."|r")
+	elseif input == "toggle" then
+		self:SlashCommand(self:IsEnabled() and "0" or "1")
 	else
 		ACD:Open("ScrollingChatText_Parent")
 	end
@@ -341,6 +343,11 @@ function SCR:CHAT_MSG(event, ...)
 		sourceName = profile.TrimRealm and sourceName:match("(.-)%-") or sourceName -- remove realm names
 		args.name = "|cff"..S.classCache[class]..sourceName.."|r"
 		
+		-- this should be done before converting to raid target icons
+		if profile.sink20OutputSink == "Blizzard" and profile.Split then
+			msg = SplitMessage(msg)
+		end
+		
 		if not isChat then
 			-- convert Raid Target icons; FrameXML\ChatFrame.lua L3168 (4.3.3.15354)
 			for c in gmatch(msg, "%b{}") do
@@ -349,10 +356,6 @@ function SCR:CHAT_MSG(event, ...)
 					msg = msg:gsub(c, ICON_LIST[ICON_TAG_LIST[rt]].."0|t")
 				end
 			end
-		end
-		
-		if profile.sink20OutputSink == "Blizzard" and profile.Split then
-			msg = SplitMessage(msg)
 		end
 		
 		-- try to continue the coloring if broken by hyperlinks; this is kinda ugly I guess
@@ -425,6 +428,10 @@ function SCR:CHAT_MSG_BN(event, ...)
 			local name = isChat and toonName or realName -- can't SendChatMessage Real ID Names, which is understandable
 			args.name = (class ~= "") and "|cff"..S.classCache[S.revLOCALIZED_CLASS_NAMES[class]]..name.."|r" or "|cff"..chanColor..name.."|r"
 			
+			if profile.sink20OutputSink == "Blizzard" and profile.Split then
+				msg = SplitMessage(msg)
+			end
+			
 			if not isChat then
 				for k in gmatch(msg, "%b{}") do
 					local rt = strlower(gsub(k, "[{}]", ""))
@@ -432,10 +439,6 @@ function SCR:CHAT_MSG_BN(event, ...)
 						msg = msg:gsub(k, ICON_LIST[ICON_TAG_LIST[rt]].."0|t")
 					end
 				end
-			end
-			
-			if profile.sink20OutputSink == "Blizzard" and profile.Split then
-				msg = SplitMessage(msg)
 			end
 			
 			wipe(gsubtrack)

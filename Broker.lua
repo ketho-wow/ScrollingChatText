@@ -1,5 +1,6 @@
 local NAME, S = ...
 local SCR = ScrollingChatText
+
 local ACD = LibStub("AceConfigDialog-3.0")
 local L = S.L
 
