@@ -2,13 +2,12 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.07.05					---
---- Version: 0.5.1 [2012.06.23]			---
+--- Version: 0.6.0 [2012.08.28]			---
 -------------------------------------------
 --- Curse			http://www.curse.com/addons/wow/scrollingchattext
 --- WoWInterface	http://www.wowinterface.com/downloads/info20827-ScrollingChatText.html
 
 -- To Do:
--- # More possible chat types. CHAT_MSG_SYSTEM, Loot, Monsters/NPCs, CHAT_MSG_TARGETICONS (?)
 -- # Some kind of filtering against spam
 -- # Prevent looping yourself, but still being able to talk in a \Chat\ Channel, different from the output \Chat\ Channel
 
@@ -19,12 +18,13 @@
 -- # LibSink(?) Messages with Links sometimes not even being output to a chat channel
 
 local NAME, S = ...
-S.VERSION = "0.5.1"
+S.VERSION = "0.6.0"
 S.BUILD = "Release"
 
 -- ScrollingChatText abbreviates to SCR in order to avoid confusion with SCT (ScrollingCombatText)
 ScrollingChatText = LibStub("AceAddon-3.0"):NewAddon(NAME, "AceEvent-3.0", "AceTimer-3.0", "AceConsole-3.0", "LibSink-2.0")
 local SCR = ScrollingChatText
+SCR.S = S -- debug purpose
 
 local profile
 
@@ -46,11 +46,9 @@ S.events = {
 	CHAT_MSG = {
 		"CHAT_MSG_SAY",
 		"CHAT_MSG_YELL",
-		"CHAT_MSG_EMOTE",
-		"CHAT_MSG_TEXT_EMOTE",
 		"CHAT_MSG_CHANNEL",
 		"CHAT_MSG_WHISPER",
-		--"CHAT_MSG_WHISPER_INFORM", -- self
+		"CHAT_MSG_WHISPER_INFORM", -- self
 		"CHAT_MSG_GUILD",
 		"CHAT_MSG_OFFICER",
 		"CHAT_MSG_PARTY",
@@ -60,71 +58,140 @@ S.events = {
 		"CHAT_MSG_BATTLEGROUND",
 		"CHAT_MSG_BATTLEGROUND_LEADER",
 	},
-	CHAT_MSG_ACH = {
-		"CHAT_MSG_ACHIEVEMENT",
-		"CHAT_MSG_GUILD_ACHIEVEMENT",
-	},
 	CHAT_MSG_BN = {
 		"CHAT_MSG_BN_WHISPER",
-		--"CHAT_MSG_BN_WHISPER_INFORM", -- self
+		"CHAT_MSG_BN_WHISPER_INFORM", -- self
 		"CHAT_MSG_BN_CONVERSATION",
+	},
+	CHAT_MSG_STATIC = {
+		"CHAT_MSG_EMOTE",
+		"CHAT_MSG_TEXT_EMOTE",
+		"CHAT_MSG_ACHIEVEMENT",
+		"CHAT_MSG_GUILD_ACHIEVEMENT",
 	},
 	-- entering/leaving combat
 	PLAYER_REGEN = {
 		"PLAYER_REGEN_DISABLED",
 		"PLAYER_REGEN_ENABLED",
-	}
+	},
 }
 
--- profile settings
+-- event groups
 S.eventremap = {
 	ACHIEVEMENT = "GUILD_ACHIEVEMENT",
 	BATTLEGROUND = "BATTLEGROUND_LEADER",
 	EMOTE = "TEXT_EMOTE",
 	GUILD = "OFFICER",
 	PARTY = "PARTY_LEADER",
-	RAID = "RAID_LEADER",
-	WHISPER = {"BN_WHISPER", "BN_CONVERSATION"},
+	RAID = "RAID_LEADER", -- left out RAID_WARNING
+	WHISPER = {"WHISPER_INFORM", "BN_WHISPER", "BN_WHISPER_INFORM", "BN_CONVERSATION"},
 }
 
--- this particular ordering is used for in the color menu
-S.ColorEvents = {
-	"ACHIEVEMENT",
-	"GUILD_ACHIEVEMENT",
-	"SAY",
-	
-	"GUILD",
-	"OFFICER",
-	"YELL",
-	
-	"PARTY",
-	"PARTY_LEADER",
-	"EMOTE",
-	
-	"RAID",
-	"RAID_LEADER",
-	"WHISPER",
-	
-	"BATTLEGROUND",
-	"BATTLEGROUND_LEADER",
-	"CHANNEL",
-	
-	"BN_WHISPER",
-	"BN_CONVERSATION",
+-- sourceName in these events are the same as destName
+S.INFORM = {
+	CHAT_MSG_WHISPER_INFORM = true,
+	CHAT_MSG_BN_WHISPER_INFORM = true,
 }
 
--- TEXT_EMOTE: /wave
--- EMOTE: /emote Hello World!
-S.colorremap = {
-	EMOTE = "TEXT_EMOTE",
+	--------------------
+	--- Other Events ---
+	--------------------
+
+S.OtherEvents = {
+	-- COMBAT
+	COMBAT_XP_GAIN = "CHAT_MSG_COMBAT_XP_GAIN",
+	COMBAT_GUILD_XP_GAIN = "CHAT_MSG_COMBAT_GUILD_XP_GAIN",
+	COMBAT_HONOR_GAIN = "CHAT_MSG_COMBAT_HONOR_GAIN",
+	COMBAT_FACTION_CHANGE = "CHAT_MSG_COMBAT_FACTION_CHANGE",
+	SKILL = "CHAT_MSG_SKILL",
+	LOOT = "CHAT_MSG_LOOT",
+	CURRENCY = "CHAT_MSG_CURRENCY",
+	MONEY = "CHAT_MSG_MONEY",
+	TRADESKILLS = "CHAT_MSG_TRADESKILLS",
+	OPENING = "CHAT_MSG_OPENING",
+	PET_INFO = "CHAT_MSG_PET_INFO",
+	COMBAT_MISC_INFO = "CHAT_MSG_COMBAT_MISC_INFO",
+	
+	-- PVP
+	BG_SYSTEM_HORDE = "CHAT_MSG_BG_SYSTEM_HORDE",
+	BG_SYSTEM_ALLIANCE = "CHAT_MSG_BG_SYSTEM_ALLIANCE",
+	BG_SYSTEM_NEUTRAL = "CHAT_MSG_BG_SYSTEM_NEUTRAL",
+	
+	-- OTHER
+	SYSTEM = "CHAT_MSG_SYSTEM", -- TIME_PLAYED_MSG, PLAYER_LEVEL_UP, etc belong to the SYSTEM group
+	ERRORS = { -- special case
+		"CHAT_MSG_FILTERED",
+		"CHAT_MSG_RESTRICTED"
+	},
+	IGNORED = "CHAT_MSG_IGNORED",
+	CHANNEL = {
+		"CHAT_MSG_CHANNEL_JOIN",
+		"CHAT_MSG_CHANNEL_LEAVE",
+		"CHAT_MSG_CHANNEL_NOTICE",
+		"CHAT_MSG_CHANNEL_NOTICE_USER",
+		"CHAT_MSG_CHANNEL_LIST",
+	},
+	TARGETICONS = "CHAT_MSG_TARGETICONS",
+	BN_INLINE_TOAST_ALERT = {
+		"CHAT_MSG_BN_INLINE_TOAST_ALERT",
+		"CHAT_MSG_BN_INLINE_TOAST_BROADCAST",
+		"CHAT_MSG_BN_INLINE_TOAST_BROADCAST_INFORM",
+		"CHAT_MSG_BN_INLINE_TOAST_CONVERSATION",
+	},
+	
+	-- CREATURE_MESSAGES
+	MONSTER_SAY = "CHAT_MSG_MONSTER_SAY",
+	MONSTER_EMOTE = "CHAT_MSG_MONSTER_EMOTE",
+	MONSTER_YELL = "CHAT_MSG_MONSTER_YELL",
+	MONSTER_WHISPER = "CHAT_MSG_MONSTER_WHISPER",
+	RAID_BOSS_EMOTE = "CHAT_MSG_RAID_BOSS_EMOTE",
+	RAID_BOSS_WHISPER = "CHAT_MSG_RAID_BOSS_WHISPER",
 }
 
-S.LevelEvents = {
-	"UNIT_LEVEL",
-	"GUILD_ROSTER_UPDATE",
-	"FRIENDLIST_UPDATE",
-	"BN_FRIEND_INFO_CHANGED",
+-- still a work in progress
+S.OtherSubEvents = {
+	CHAT_MSG_CHANNEL_NOTICE = {
+		YOU_CHANGED = CHAT_YOU_CHANGED_NOTICE,
+		YOU_JOINED = CHAT_YOU_JOINED_NOTICE,
+		YOU_LEFT = CHAT_YOU_LEFT_NOTICE,
+		SUSPENDED = CHAT_SUSPENDED_NOTICE,
+	},
+	CHAT_MSG_CHANNEL_NOTICE_USER = {
+		OWNER_CHANGED = CHAT_OWNER_CHANGED_NOTICE,
+		SET_MODERATOR = CHAT_SET_MODERATOR_NOTICE,
+		UNSET_MODERATOR_NOTICE = CHAT_UNSET_MODERATOR_NOTICE,
+	},
+	CHAT_MSG_BN_INLINE_TOAST_ALERT = {
+		--BROADCAST = BN_INLINE_TOAST_BROADCAST, -- 2 args
+		--BROADCAST_INFORM = BN_INLINE_TOAST_BROADCAST_INFORM, -- no args
+		--CONVERSATION = BN_INLINE_TOAST_CONVERSATION,
+		--FRIEND_ADDED = BN_INLINE_TOAST_FRIEND_ADDED,
+		FRIEND_OFFLINE = BN_INLINE_TOAST_FRIEND_OFFLINE,
+		FRIEND_ONLINE = BN_INLINE_TOAST_FRIEND_ONLINE,
+		--FRIEND_PENDING = BN_INLINE_TOAST_FRIEND_PENDING, -- 1 number arg
+		--FRIEND_REMOVED = BN_INLINE_TOAST_FRIEND_REMOVED,
+		--FRIEND_REQUEST = BN_INLINE_TOAST_FRIEND_REQUEST, -- no args
+	},
+	
+	CHAT_MSG_CHANNEL_JOIN = CHAT_CHANNEL_JOIN_GET,
+	CHAT_MSG_CHANNEL_LEAVE = CHAT_CHANNEL_LEAVE_GET,
 }
+
+S.MONSTER_EMOTE = {
+	CHAT_MSG_MONSTER_EMOTE = true,
+	CHAT_MSG_RAID_BOSS_EMOTE = true,
+}
+
+S.MONSTER_CHAT = {
+	CHAT_MSG_MONSTER_SAY = CHAT_MONSTER_SAY_GET,
+	CHAT_MSG_MONSTER_YELL = CHAT_MONSTER_YELL_GET,
+	CHAT_MSG_MONSTER_WHISPER = CHAT_MONSTER_WHISPER_GET,
+	CHAT_MSG_RAID_BOSS_WHISPER = CHAT_MONSTER_WHISPER_GET,
+}
+
+	--------------------
+	--- Level Events ---
+	--------------------
 
 -- register/unregister events depending on options
 S.levelremap = {
@@ -140,6 +207,145 @@ function S.LevelGroup()
 	return profile.LevelParty or profile.LevelRaid
 end
 
+	---------------------
+	--- Color Options ---
+	---------------------
+
+-- particular ordering
+S.ColorOptions = {
+	[1] = "ACHIEVEMENT",
+	[4] = "GUILD",
+	[7] = "PARTY",
+	[10] = "RAID",
+	[13] = "BATTLEGROUND",
+	[16] = "BN_WHISPER",
+	
+	[2] = "GUILD_ACHIEVEMENT",
+	[5] = "OFFICER",
+	[8] = "PARTY_LEADER",
+	[11] = "RAID_LEADER",
+	[14] = "BATTLEGROUND_LEADER",
+	[17] = "BN_CONVERSATION",
+	
+	[3] = "SAY",
+	[6] = "YELL",
+	[9] = "EMOTE",
+	[12] = "RAID_WARNING", -- filler. not actually used..
+	[15] = "WHISPER",
+}
+
+-- particular ordering, key: ChatTypeInfo
+S.ColorOtherOptions = {
+	-- COMBAT
+	[1] = "COMBAT_XP_GAIN",
+	[4] = "COMBAT_GUILD_XP_GAIN",
+	[7] = "COMBAT_HONOR_GAIN",
+	[10] = "COMBAT_FACTION_CHANGE",
+	[13] = "SKILL",
+	[16] = "LOOT",
+	[19] = "CURRENCY",
+	[22] = "MONEY",
+	[25] = "TRADESKILLS",
+	[2] = "OPENING",
+	[5] = "PET_INFO",
+	[8] = "COMBAT_MISC_INFO",
+	
+	-- PVP
+	[11] = "BG_SYSTEM_HORDE",
+	[14] = "BG_SYSTEM_ALLIANCE",
+	[17] = "BG_SYSTEM_NEUTRAL",
+	
+	-- OTHER
+	[20] = "SYSTEM",
+	[23] = "ERRORS", -- special: "FILTERED", "RESTRICTED"
+	[26] = "IGNORED",
+	[3] = "CHANNEL",
+	[6] = "TARGETICONS",
+	[9] = "BN_INLINE_TOAST_ALERT",
+	
+	-- CREATURE_MESSAGES
+	[12] = "MONSTER_SAY",
+	[15] = "MONSTER_EMOTE",
+	[18] = "MONSTER_YELL",
+	[21] = "MONSTER_WHISPER",
+	[24] = "RAID_BOSS_EMOTE",
+	[27] = "RAID_BOSS_WHISPER",
+}
+
+S.EventToColor = {
+	-- COMBAT
+	CHAT_MSG_COMBAT_XP_GAIN = "COMBAT_XP_GAIN",
+	CHAT_MSG_COMBAT_GUILD_XP_GAIN = "COMBAT_GUILD_XP_GAIN",
+	CHAT_MSG_COMBAT_HONOR_GAIN = "COMBAT_HONOR_GAIN",
+	CHAT_MSG_COMBAT_FACTION_CHANGE = "COMBAT_FACTION_CHANGE",
+	CHAT_MSG_SKILL = "SKILL",
+	CHAT_MSG_LOOT = "LOOT",
+	CHAT_MSG_CURRENCY = "CURRENCY",
+	CHAT_MSG_MONEY = "MONEY",
+	CHAT_MSG_TRADESKILLS = "TRADESKILLS",
+	CHAT_MSG_OPENING = "OPENING",
+	CHAT_MSG_PET_INFO = "PET_INFO",
+	CHAT_MSG_COMBAT_MISC_INFO = "COMBAT_MISC_INFO",
+	
+	-- PVP
+	CHAT_MSG_BG_SYSTEM_HORDE = "BG_SYSTEM_HORDE",
+	CHAT_MSG_BG_SYSTEM_ALLIANCE = "BG_SYSTEM_ALLIANCE",
+	CHAT_MSG_BG_SYSTEM_NEUTRAL = "BG_SYSTEM_NEUTRAL",
+	
+	-- OTHER
+	CHAT_MSG_SYSTEM = "SYSTEM",
+	CHAT_MSG_FILTERED = "ERRORS",
+	CHAT_MSG_RESTRICTED = "ERRORS", -- same
+	CHAT_MSG_IGNORED = "IGNORED",
+	CHAT_MSG_CHANNEL_JOIN = "CHANNEL",
+	CHAT_MSG_CHANNEL_LEAVE = "CHANNEL", -- same
+	CHAT_MSG_CHANNEL_NOTICE = "CHANNEL", -- same
+	CHAT_MSG_CHANNEL_NOTICE_USER = "CHANNEL", -- same
+	CHAT_MSG_CHANNEL_LIST = "CHANNEL", -- same
+	CHAT_MSG_TARGETICONS = "TARGETICONS",
+	CHAT_MSG_BN_INLINE_TOAST_ALERT = "BN_INLINE_TOAST_ALERT",
+	CHAT_MSG_BN_INLINE_TOAST_BROADCAST = "BN_INLINE_TOAST_ALERT", -- same
+	CHAT_MSG_BN_INLINE_TOAST_BROADCAST_INFORM = "BN_INLINE_TOAST_ALERT", -- same
+	CHAT_MSG_BN_INLINE_TOAST_CONVERSATION = "BN_INLINE_TOAST_ALERT", -- same
+	
+	-- CREATURE_MESSAGES
+	CHAT_MSG_MONSTER_SAY = "MONSTER_SAY",
+	CHAT_MSG_MONSTER_EMOTE = "MONSTER_EMOTE",
+	CHAT_MSG_MONSTER_YELL = "MONSTER_YELL",
+	CHAT_MSG_MONSTER_WHISPER = "MONSTER_WHISPER",
+	CHAT_MSG_RAID_BOSS_EMOTE = "RAID_BOSS_EMOTE",
+	CHAT_MSG_RAID_BOSS_WHISPER = "RAID_BOSS_WHISPER",
+}
+
+-- for missing/preferable names
+S.otherremap = {
+	SKILL = SKILLUPS,
+	LOOT = ITEM_LOOT,
+	--CURRENCY = CURRENCY, -- kinda odd if you check CHAT_CONFIG_OTHER_COMBAT[7]
+	MONEY = MONEY_LOOT,
+	
+	SYSTEM = SYSTEM_MESSAGES,
+	
+	MONSTER_SAY = CHAT_MSG_MONSTER_SAY, -- from GlobalStrings
+	MONSTER_EMOTE = CHAT_MSG_MONSTER_EMOTE, -- from GlobalStrings
+	MONSTER_YELL = CHAT_MSG_MONSTER_YELL, -- from GlobalStrings
+	MONSTER_WHISPER = CHAT_MSG_MONSTER_WHISPER, -- from GlobalStrings
+	
+	RAID_BOSS_EMOTE = MONSTER_BOSS_EMOTE, -- special; GlobalStrings: CHAT_MSG_RAID_BOSS_EMOTE
+	RAID_BOSS_WHISPER = MONSTER_BOSS_WHISPER, -- special
+}
+
+-- color groups
+S.colorremap = {
+	-- TEXT_EMOTE: /wave
+	-- EMOTE: /emote Hello World!
+	EMOTE = "TEXT_EMOTE",
+	WHISPER = "WHISPER_INFORM", -- self
+	BN_WHISPER = "BN_WHISPER_INFORM", -- self
+	FILTERED = {"ERRORS", "RESTRICTED"}, -- special reverse case for defaults
+	ERRORS = {"FILTERED", "RESTRICTED"}, -- special reverse case for profiles
+}
+
 	--------------
 	--- Colors ---
 	--------------
@@ -151,7 +357,7 @@ S.classCache = setmetatable({}, {__index = function(t, k)
 	return v
 end})
 
-S.chanCache = setmetatable({}, {__index = function(t, k)
+S.chatCache = setmetatable({}, {__index = function(t, k)
 	local color = profile.color[k]
 	local v = format("%02X%02X%02X", color.r*255, color.g*255, color.b*255)
 	rawset(t, k, v)
@@ -160,7 +366,7 @@ end})
 
 function SCR:WipeCache()
 	wipe(S.classCache)
-	wipe(S.chanCache)
+	wipe(S.chatCache)
 end
 
 	------------------
@@ -169,7 +375,7 @@ end
 
 S.racePath = "Interface\\Glues\\CharacterCreate\\UI-CharacterCreate-Races"
 
-S.RACE_ICON_TCOORDS_256 = { -- GlueXML\CharacterCreate.lua L25 (4.3.3.15354)
+S.RACE_ICON_TCOORDS_256 = { -- GlueXML\CharacterCreate.lua L25 (4.3.4.15595)
 	HUMAN_MALE		= {0, 32, 0, 128},
 	DWARF_MALE		= {32, 64, 0, 128},
 	GNOME_MALE		= {64, 96, 0, 128},
@@ -201,6 +407,9 @@ S.RACE_ICON_TCOORDS_256 = { -- GlueXML\CharacterCreate.lua L25 (4.3.3.15354)
 
 	WORGEN_MALE		= {160, 192, 0, 128},
 	WORGEN_FEMALE	= {160, 192, 256, 384},
+	
+	PANDAREN_MALE	= {192, 224, 0, 128},
+	PANDAREN_FEMALE	= {192, 224, 256, 384},
 }
 
 S.sexremap = {nil, "MALE", "FEMALE"}
@@ -274,7 +483,7 @@ for i, v in ipairs(S.timestamps) do
 end
 
 function S.GetTimestamp()
-	return (profile.Timestamp > 1) and "|cff"..S.chanCache.TIMESTAMP..BetterDate(S.timestamps[profile.Timestamp], time()).."|r" or ""
+	return (profile.Timestamp > 1) and "|cff"..S.chatCache.TIMESTAMP..BetterDate(S.timestamps[profile.Timestamp], time()).."|r" or ""
 end
 
 	---------------

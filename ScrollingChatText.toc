@@ -1,9 +1,10 @@
-## Interface: 40300
-## Version: 0.5.1
+## Interface: 50001
+## Version: 0.6.0
 ## Title: ScrollingChatText
 ## Notes: Shows Chat as Combat Text
 ## Author: Ketho @ EU-Boulderfist
 ## SavedVariables: ScrollingChatTextDB
+## Dependencies: Blizzard_CombatText
 ## OptionalDeps: Ace3, !ClassColors
 ## X-Embeds: Ace3
 

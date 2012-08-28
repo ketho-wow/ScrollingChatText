@@ -16,11 +16,7 @@ local dataobject = {
 		if IsModifierKeyDown() then
 			SCR:SlashCommand(SCR:IsEnabled() and "0" or "1")
 		else
-			if ACD.OpenFrames["ScrollingChatText_Parent"] then
-				ACD:Close("ScrollingChatText_Parent")
-			else
-				ACD:Open("ScrollingChatText_Parent")
-			end
+			ACD[ACD.OpenFrames.ScrollingChatText_Parent and "Close" or "Open"](ACD, "ScrollingChatText_Parent")
 		end
 	end,
 	OnTooltipShow = function(tt)
