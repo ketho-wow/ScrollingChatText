@@ -1,5 +1,5 @@
 ## Interface: 50001
-## Version: 0.6.1
+## Version: 0.6.2
 ## Title: ScrollingChatText
 ## Notes: Shows Chat as Combat Text
 ## Author: Ketho @ EU-Boulderfist

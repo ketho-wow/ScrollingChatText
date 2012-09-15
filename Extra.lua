@@ -41,13 +41,16 @@ local group, guild, friend, realid = {}, {}, {}, {}
 function SCR:UNIT_LEVEL()
 	local isChat = S.LibSinkChat[profile.sink20OutputSink]
 	
-	local numParty = profile.LevelParty and GetNumSubgroupMembers() or 0
-	local numRaid = profile.LevelRaid and GetNumGroupMembers() or 0
+	local isRaid = IsInRaid()
+	local isParty = IsInGroup()
+	
+	local numParty = profile.LevelParty and GetNumSubgroupMembers()
+	local numRaid = profile.LevelRaid and GetNumGroupMembers()
 
-	local numGroup = (numRaid > 0) and numRaid or (numParty > 0) and numParty or 0
-	local groupType = (numRaid > 0) and "raid" or (numParty > 0) and "party"
-	local color = (numRaid > 0) and profile.color.RAID or (numParty > 0) and profile.color.PARTY
-	args.chan = (numRaid > 0) and "|cffFF7F00"..RAID.."|r" or (numParty > 0) and "|cffA8A8FF"..PARTY.."|r"
+	local numGroup = isRaid and numRaid or isParty and numParty or 0
+	local groupType = isRaid and "raid" or isParty and "party"
+	local color = isRaid and profile.color.RAID or isParty and profile.color.PARTY
+	args.chan = isRaid and "|cffFF7F00"..RAID.."|r" or isParty and "|cffA8A8FF"..PARTY.."|r"
 	
 	for i = 1, numGroup do
 		local guid = UnitGUID(groupType..i)
@@ -139,8 +142,10 @@ function SCR:BN_FRIEND_INFO_CHANGED()
 		args.chan = FRIENDS_BNET_NAME_COLOR_CODE..BATTLENET_FRIEND.."|r"
 		
 		for i = 1, select(2, BNGetNumFriends()) do
-			local presenceId, firstname, surname, someToonName, toonID = BNGetFriendInfo(i)
-			local _, toonName, client, realm, _, _, race, class, _, _, level = BNGetToonInfo(presenceId)
+			local presenceID, presenceName, battleTag, isBattleTagPresence = BNGetFriendInfo(i)
+			
+			-- ToDo: add support for multiple online toons / BNGetFriendToonInfo
+			local _, toonName, client, realm, _, _, race, class, _, _, level = BNGetToonInfo(presenceID)
 			
 			-- avoid misrecognizing characters that share the same name, but are from different servers
 			realid[realm] = realid[realm] or {}
@@ -152,11 +157,9 @@ function SCR:BN_FRIEND_INFO_CHANGED()
 					local classIcon = S.GetClassIcon(S.revLOCALIZED_CLASS_NAMES[class], 1, 1)
 					args.icon = (profile.IconSize > 1 and not isChat) and classIcon or ""
 					
-					-- "|Kg49|k00000000|k": f BNplayer; g firstname; s surname
-					local fixedLink = firstname:gsub("g", "f")
-					local fullName = firstname.." "..surname
+					-- "|Kg49|k00000000|k": f BNplayer; g firstname; s surname; default f in 5.0.4
 					-- the "BNplayer" hyperlink might maybe taint whatever it calls on right-click
-					args.name = format("|cff%s|HBNplayer:%s:%s|h%s|r |cff%s%s|h|r", "82C5FF", fixedLink, presenceId, fullName, S.classCache[S.revLOCALIZED_CLASS_NAMES[class]], toonName)
+					args.name = format("|cff%s|HBNplayer:%s:%s|h%s|r |cff%s%s|h|r", "82C5FF", presenceName, presenceId, presenceName, S.classCache[S.revLOCALIZED_CLASS_NAMES[class]], toonName)
 					
 					args.level = "|cffADFF2F"..level.."|r"
 					
