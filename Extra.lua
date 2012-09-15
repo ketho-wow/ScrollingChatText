@@ -159,7 +159,7 @@ function SCR:BN_FRIEND_INFO_CHANGED()
 					
 					-- "|Kg49|k00000000|k": f BNplayer; g firstname; s surname; default f in 5.0.4
 					-- the "BNplayer" hyperlink might maybe taint whatever it calls on right-click
-					args.name = format("|cff%s|HBNplayer:%s:%s|h%s|r |cff%s%s|h|r", "82C5FF", presenceName, presenceId, presenceName, S.classCache[S.revLOCALIZED_CLASS_NAMES[class]], toonName)
+					args.name = format("|cff%s|HBNplayer:%s:%s|h%s|r |cff%s%s|h|r", "82C5FF", presenceName, presenceID, presenceName, S.classCache[S.revLOCALIZED_CLASS_NAMES[class]], toonName)
 					
 					args.level = "|cffADFF2F"..level.."|r"
 					
