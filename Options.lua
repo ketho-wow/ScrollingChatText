@@ -852,12 +852,14 @@ do
 		[3] = { -- OTHER
 			[1] = "SYSTEM",
 			[4] = "ERRORS", -- special: "FILTERED", "RESTRICTED"
+			[7] = "IGNORED",
 			
-			[2] = "IGNORED",
-			[5] = "CHANNEL",
+			[2] = "CHANNEL",
+			[5] = "TARGETICONS",
+			[8] = "BN_INLINE_TOAST_ALERT",
 			
-			[3] = "TARGETICONS",
-			[6] = "BN_INLINE_TOAST_ALERT",
+			[3] = "PET_BATTLE_COMBAT_LOG",
+			[6] = "PET_BATTLE_INFO",
 		},
 		[4] = { -- CREATURE_MESSAGES
 			[1] = "MONSTER_SAY",

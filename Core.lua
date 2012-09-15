@@ -26,9 +26,11 @@ local GetNumSubgroupMembers = GetNumSubgroupMembers
 local f = CreateFrame("Frame")
 
 function f:WaitInitialize(elapsed)
-	f.delayedInit = true
-	self:SetScript("OnUpdate", nil)
-	SCR:OnInitialize()
+	-- let's not hope someone changed YELL to white or greenish in the Blizzard chat options
+	if ChatTypeInfo.YELL.g ~= 1 then
+		self:SetScript("OnUpdate", nil)
+		SCR:OnInitialize()
+	end
 end
 
 	---------------------------
@@ -53,10 +55,8 @@ local appValue = {
 	ScrollingChatText_Extra = options.args.extra,
 }
 
-local slashCmds = {"scr", "scrollchat", "scrollingchat", "scrollingchattext"}
-
 function SCR:OnInitialize()
-	if not f.delayedInit then
+	if ChatTypeInfo.YELL.g == 1 then
 		f:SetScript("OnUpdate", f.WaitInitialize)
 		return
 	end
@@ -92,7 +92,7 @@ function SCR:OnInitialize()
 	--- Slash Commands ---
 	----------------------
 	
-	for _, v in ipairs(slashCmds) do
+	for _, v in ipairs({"scr", "scrollchat", "scrollingchat", "scrollingchattext"}) do
 		self:RegisterChatCommand(v, "SlashCommand")
 	end
 	
@@ -218,7 +218,7 @@ function SCR:RefreshDB()
 	
 	self:WipeCache() -- renew color caches
 	self:RefreshLevelEvents() -- register/unregister level events according to options
-
+	
 	-- parent CombatText to WorldFrame so you can still see it while the UI is hidden
 	if profile.ParentCombatText and CombatText then
 		CombatText:SetParent(WorldFrame)
@@ -302,13 +302,14 @@ local function StateFilter()
 		local combat = filter.Combat and combatState
 		local nocombat = filter.NoCombat and not combatState
 		
-		local numRaid = GetNumGroupMembers()
-		local numParty = GetNumSubgroupMembers()
-		local isRaid = filter.Raid and numRaid > 0
-		local isParty = filter.Party and (numRaid == 0 and numParty > 0)
-		local isSolo = filter.Solo and (numRaid == 0 and numParty == 0)
+		local isRaid = IsInRaid()
+		local isParty = IsInGroup()
 		
-		lastState = (combat or nocombat) and (isRaid or isParty or isSolo)
+		local raid = filter.Raid and isRaid
+		local party = filter.Party and (not isRaid and isParty)
+		local solo = filter.Solo and (not isRaid and not isParty)
+		
+		lastState = (combat or nocombat) and (raid or party or solo)
 	end
 	
 	return lastState
@@ -447,6 +448,8 @@ function SCR:CHAT_MSG_BN(event, ...)
 	if not StateFilter() then return end
 	
 	local msg, realName, _, _, _, _, _, _, _, _, _, _, presenceId = ...
+	
+	-- ToDo: add support for multiple toons / BNGetFriendToonInfo
 	local _, toonName, client, _, _, _, _, class = BNGetToonInfo(presenceId)
 	
 	local subevent = event:match("CHAT_MSG_(.+)")

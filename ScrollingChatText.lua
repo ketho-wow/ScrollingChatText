@@ -2,7 +2,7 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.07.05					---
---- Version: 0.6.0 [2012.08.28]			---
+--- Version: 0.6.1 [2012.09.15]			---
 -------------------------------------------
 --- Curse			http://www.curse.com/addons/wow/scrollingchattext
 --- WoWInterface	http://www.wowinterface.com/downloads/info20827-ScrollingChatText.html
@@ -18,7 +18,7 @@
 -- # LibSink(?) Messages with Links sometimes not even being output to a chat channel
 
 local NAME, S = ...
-S.VERSION = "0.6.0"
+S.VERSION = "0.6.1"
 S.BUILD = "Release"
 
 -- ScrollingChatText abbreviates to SCR in order to avoid confusion with SCT (ScrollingCombatText)
@@ -138,6 +138,9 @@ S.OtherEvents = {
 		"CHAT_MSG_BN_INLINE_TOAST_BROADCAST_INFORM",
 		"CHAT_MSG_BN_INLINE_TOAST_CONVERSATION",
 	},
+	-- added in 5.0.4
+	PET_BATTLE_COMBAT_LOG = "CHAT_MSG_PET_BATTLE_COMBAT_LOG",
+	PET_BATTLE_INFO = "CHAT_MSG_PET_BATTLE_INFO",
 	
 	-- CREATURE_MESSAGES
 	MONSTER_SAY = "CHAT_MSG_MONSTER_SAY",
@@ -149,6 +152,7 @@ S.OtherEvents = {
 }
 
 -- still a work in progress
+-- Blizzard logic in FrameXML\ChatFrame.lua
 S.OtherSubEvents = {
 	CHAT_MSG_CHANNEL_NOTICE = {
 		YOU_CHANGED = CHAT_YOU_CHANGED_NOTICE,
@@ -246,22 +250,24 @@ S.ColorOtherOptions = {
 	[19] = "CURRENCY",
 	[22] = "MONEY",
 	[25] = "TRADESKILLS",
-	[2] = "OPENING",
-	[5] = "PET_INFO",
-	[8] = "COMBAT_MISC_INFO",
+	[28] = "OPENING",
+	[2] = "PET_INFO",
+	[5] = "COMBAT_MISC_INFO",
 	
 	-- PVP
-	[11] = "BG_SYSTEM_HORDE",
-	[14] = "BG_SYSTEM_ALLIANCE",
-	[17] = "BG_SYSTEM_NEUTRAL",
+	[8] = "BG_SYSTEM_HORDE",
+	[11] = "BG_SYSTEM_ALLIANCE",
+	[14] = "BG_SYSTEM_NEUTRAL",
 	
 	-- OTHER
-	[20] = "SYSTEM",
-	[23] = "ERRORS", -- special: "FILTERED", "RESTRICTED"
-	[26] = "IGNORED",
-	[3] = "CHANNEL",
-	[6] = "TARGETICONS",
-	[9] = "BN_INLINE_TOAST_ALERT",
+	[17] = "SYSTEM",
+	[20] = "ERRORS", -- special: "FILTERED", "RESTRICTED"
+	[23] = "IGNORED",
+	[26] = "CHANNEL",
+	[29] = "TARGETICONS",
+	[3] = "BN_INLINE_TOAST_ALERT",
+	[6] = "PET_BATTLE_COMBAT_LOG",
+	[9] = "PET_BATTLE_INFO",
 	
 	-- CREATURE_MESSAGES
 	[12] = "MONSTER_SAY",
@@ -307,6 +313,8 @@ S.EventToColor = {
 	CHAT_MSG_BN_INLINE_TOAST_BROADCAST = "BN_INLINE_TOAST_ALERT", -- same
 	CHAT_MSG_BN_INLINE_TOAST_BROADCAST_INFORM = "BN_INLINE_TOAST_ALERT", -- same
 	CHAT_MSG_BN_INLINE_TOAST_CONVERSATION = "BN_INLINE_TOAST_ALERT", -- same
+	CHAT_MSG_PET_BATTLE_COMBAT_LOG = "PET_BATTLE_COMBAT_LOG",
+	CHAT_MSG_PET_BATTLE_INFO = "PET_BATTLE_INFO",
 	
 	-- CREATURE_MESSAGES
 	CHAT_MSG_MONSTER_SAY = "MONSTER_SAY",
@@ -324,7 +332,7 @@ S.otherremap = {
 	--CURRENCY = CURRENCY, -- kinda odd if you check CHAT_CONFIG_OTHER_COMBAT[7]
 	MONEY = MONEY_LOOT,
 	
-	SYSTEM = SYSTEM_MESSAGES,
+	SYSTEM = SYSTEM_MESSAGES, -- missing
 	
 	MONSTER_SAY = CHAT_MSG_MONSTER_SAY, -- from GlobalStrings
 	MONSTER_EMOTE = CHAT_MSG_MONSTER_EMOTE, -- from GlobalStrings
