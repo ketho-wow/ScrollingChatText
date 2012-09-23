@@ -771,14 +771,16 @@ do
 		[1] = "SAY",
 		[4] = "YELL",
 		[7] = "EMOTE",
+		[10] = "ACHIEVEMENT",
 		
-		[2] = "PARTY",
-		[5] = "RAID",
-		[8] = "BATTLEGROUND",
+		[2] = "GUILD",
+		[5] = "OFFICER",
+		[8] = "WHISPER",
+		[11] = "BN_WHISPER",
 		
-		[3] = "WHISPER",
-		[6] = "GUILD",
-		[9] = "ACHIEVEMENT",
+		[3] = "PARTY",
+		[6] = "RAID",
+		[9] = "BATTLEGROUND",
 	}
 	
 	local chatGroup = options.args.main.args.inline1.args

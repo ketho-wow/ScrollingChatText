@@ -41,11 +41,11 @@ local group, guild, friend, realid = {}, {}, {}, {}
 function SCR:UNIT_LEVEL()
 	local isChat = S.LibSinkChat[profile.sink20OutputSink]
 	
-	local isRaid = IsInRaid()
-	local isParty = IsInGroup()
+	local isRaid = profile.LevelParty and IsInRaid()
+	local isParty = profile.LevelRaid and IsInGroup()
 	
-	local numParty = profile.LevelParty and GetNumSubgroupMembers()
-	local numRaid = profile.LevelRaid and GetNumGroupMembers()
+	local numParty = GetNumSubgroupMembers()
+	local numRaid = GetNumGroupMembers()
 
 	local numGroup = isRaid and numRaid or isParty and numParty or 0
 	local groupType = isRaid and "raid" or isParty and "party"

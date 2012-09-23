@@ -2,7 +2,7 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.07.05					---
---- Version: 0.6.3 [2012.09.15]			---
+--- Version: 0.6.4 [2012.09.23]			---
 -------------------------------------------
 --- Curse			http://www.curse.com/addons/wow/scrollingchattext
 --- WoWInterface	http://www.wowinterface.com/downloads/info20827-ScrollingChatText.html
@@ -18,7 +18,7 @@
 -- # LibSink(?) Messages with Links sometimes not even being output to a chat channel
 
 local NAME, S = ...
-S.VERSION = "0.6.3"
+S.VERSION = "0.6.4"
 S.BUILD = "Release"
 
 -- ScrollingChatText abbreviates to SCR in order to avoid confusion with SCT (ScrollingCombatText)
@@ -81,10 +81,11 @@ S.eventremap = {
 	ACHIEVEMENT = "GUILD_ACHIEVEMENT",
 	BATTLEGROUND = "BATTLEGROUND_LEADER",
 	EMOTE = "TEXT_EMOTE",
-	GUILD = "OFFICER",
+	--GUILD = "OFFICER", -- OFFICER is now standalone
 	PARTY = "PARTY_LEADER",
 	RAID = "RAID_LEADER", -- left out RAID_WARNING
-	WHISPER = {"WHISPER_INFORM", "BN_WHISPER", "BN_WHISPER_INFORM", "BN_CONVERSATION"},
+	WHISPER = "WHISPER_INFORM",
+	BN_WHISPER = {"BN_WHISPER_INFORM", "BN_CONVERSATION"},
 }
 
 -- sourceName in these events are the same as destName

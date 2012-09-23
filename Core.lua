@@ -74,7 +74,7 @@ function SCR:OnInitialize()
 	
 	ACR:RegisterOptionsTable("ScrollingChatText_Parent", options)
 	ACD:AddToBlizOptions("ScrollingChatText_Parent", NAME)
-	ACD:SetDefaultSize("ScrollingChatText_Parent", 700, 572)
+	ACD:SetDefaultSize("ScrollingChatText_Parent", 700, 585)
 	
 	-- setup profiles now, self reminder: requires db to be already defined
 	options.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
