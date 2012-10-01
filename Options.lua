@@ -679,7 +679,7 @@ S.options = {
 						local classIcon = S.GetClassIcon(select(2, UnitClass("player")), 2, 3)
 						args.icon = (profile.IconSize > 1) and raceIcon..classIcon or ""
 						args.time = S.GetTimestamp()
-						args.chan = GetNumGroupMembers() > 0 and "|cffFF7F00"..RAID.."|r" or "|cffA8A8FF"..PARTY.."|r"
+						args.chan = IsInRaid() and "|cffFF7F00"..RAID.."|r" or "|cffA8A8FF"..PARTY.."|r"
 						args.name = "|cff"..S.classCache[S.playerClass]..PLAYER.."|r"
 						local playerLevel = UnitLevel("player")
 						args.level = "|cffADFF2F"..playerLevel + (playerLevel == maxLevel and 0 or 1).."|r"

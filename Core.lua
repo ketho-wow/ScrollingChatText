@@ -14,8 +14,6 @@ local pairs, ipairs = pairs, ipairs
 local strfind, strsub, gsub = strfind, strsub, gsub
 
 local time = time
-local GetNumGroupMembers = GetNumGroupMembers
-local GetNumSubgroupMembers = GetNumSubgroupMembers
 
 	-------------------------
 	--- ChatTypeInfo Wait ---
@@ -491,7 +489,7 @@ function SCR:CHAT_MSG_BN(event, ...)
 		for k in string.gmatch(msg, "|H.-|h.-|h") do
 			local linkType, linkId = k:match("|H(.-):(.-):")
 			if linkType == "item" then
-				local quality = select(3, GetItemInfo(linkId))
+				local quality = select(3, GetItemInfo(linkId)) or -1 -- item not yet cached
 				msg = msg:gsub(k:gsub("(%p)", "%%%1"), format("%s%s|r|cff"..chanColor, ITEM_QUALITY_COLORS[quality].hex, k))
 			elseif not gsubtrack[linkColor[linkType]] then
 				msg = msg:gsub("|H"..linkType..":.-|h.-|h", "|cff"..linkColor[linkType].."%1|r|cff"..chanColor) -- continue coloring
