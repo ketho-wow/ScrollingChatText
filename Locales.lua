@@ -48,7 +48,7 @@ local L = {
 		USE_CLASS_COLORS = "Please use the |cff71D5FFClass Colors|r AddOn",
 		SAY = "S",
 		YELL = "Y",
-		EMOTE = "E", TEXT_EMOTE = "E", -- maybe deprecated
+		EMOTE = "E", TEXT_EMOTE = "E", -- deprecated
 		WHISPER = "W From", BN_WHISPER = "W From",
 		WHISPER_INFORM = "W To", BN_WHISPER_INFORM = "W To",
 		BN_CONVERSATION = "BN",
@@ -62,30 +62,34 @@ local L = {
 		BATTLEGROUND_LEADER = "BL",
 	},
 	esES = {
-		BROKER_CLICK = "|cffffffffHaz clic|r para ver opciones.",
-		BROKER_SHIFT_CLICK = "|cffffffffMayús-clic|r para activar/desactivar.",
+		BROKER_CLICK = "|cffffffffHaz clic|r para ver opciones",
+		BROKER_SHIFT_CLICK = "|cffffffffMayús-clic|r para activar/desactivar",
 	},
 	esMX = {
-		BROKER_CLICK = "|cffffffffHaz clic|r para ver opciones.",
-		BROKER_SHIFT_CLICK = "|cffffffffMayús-clic|r para activar/desactivar.",
+		BROKER_CLICK = "|cffffffffHaz clic|r para ver opciones",
+		BROKER_SHIFT_CLICK = "|cffffffffMayús-clic|r para activar/desactivar",
 	},
 	frFR = {
 	},
 	itIT = {
 	},
 	koKR = {
-		SAY = "\235\140\128\237\153\148",
-		YELL = "\236\153\184\236\185\168",
-		WHISPER = "\235\176\155\236\157\128\234\183\147\235\167\144", BN_WHISPER = "\235\176\155\236\157\128\234\183\147\235\167\144",
-		WHISPER_INFORM = "\234\183\147\235\167\144", BN_WHISPER_INFORM = "\234\183\147\235\167\144",
-		GUILD = "\234\184\184\235\147\156",
-		OFFICER = "\236\152\164\237\148\188\236\132\156",
-		PARTY = "\237\140\140\237\139\176",
-		PARTY_LEADER = "\237\140\140\237\139\176", -- ?; PARTY
-		RAID = "\234\179\181\235\140\128",
-		RAID_LEADER = "\234\179\181\235\140\128\236\158\165",
-		BATTLEGROUND = "\236\160\132\236\158\165",
-		BATTLEGROUND_LEADER = "\236\160\132\237\136\172\235\140\128\236\158\165",
+		BATTLEGROUND = "전장",
+		BATTLEGROUND_LEADER = "전투대장",
+		EMOTE = "이모티콘",
+		GUILD = "길드",
+		OFFICER = "오피서",
+		OPTION_FONT = "글꼴",
+		OPTION_GROUP_LEVELUP = "레벨업",
+		OPTION_ICON_SIZE = "아이콘 크기",
+		OPTION_TAB_EXTRA = "추가기능",
+		PARTY = "파티", PARTY_LEADER = "파티",
+		RAID = "공대",
+		RAID_LEADER = "공대장",
+		SAY = "대화",
+		WHISPER = "받은귓말", BN_WHISPER = "받은귓말",
+		WHISPER_INFORM = "귓말", BN_WHISPER_INFORM = "귓말",
+		YELL = "외침",
 	},
 	ptBR = {
 	},
@@ -118,21 +122,23 @@ local L = {
 		BATTLEGROUND_LEADER = "\232\159\128", -- "蟀"
 	},
 	zhTW = {
-		OPTION_ICON_SIZE = "\229\156\150\231\164\186\229\164\167\229\176\143", -- "圖示大小"
-		OPTION_FONT = "\229\173\151\233\171\148", -- "字體"
-		HELLO_WORLD = "\228\189\160\229\165\189\239\188\129", -- "你好！"
-		SAY = "\232\170\170", -- "說"
-		YELL = "\229\150\138", -- "喊"
-		WHISPER = "\232\129\189", BN_WHISPER = "\232\129\189", -- "聽"
-		WHISPER_INFORM = "\229\175\134", BN_WHISPER_INFORM = "\229\175\134", -- "密"
-		GUILD = "\230\156\131", -- "會"
-		OFFICER = "\229\174\152", -- "官"
-		PARTY = "\233\154\138", -- "隊"
-		PARTY_LEADER = "\233\154\138\233\149\183", -- "隊長"
-		RAID = "\229\156\152", -- "團"
-		RAID_LEADER = "\229\156\152\233\149\183", -- "團長"
-		BATTLEGROUND = "\230\136\176", -- "戰"
-		BATTLEGROUND_LEADER = "\230\136\176\233\160\152", -- "戰領"
+		BATTLEGROUND = "戰",
+		BATTLEGROUND_LEADER = "戰領",
+		GUILD = "會",
+		HELLO_WORLD = "你好！",
+		OFFICER = "官",
+		OPTION_FCT_POSITION = "位置",
+		OPTION_FCT_SCALE = "縮放",
+		OPTION_FONT = "字體",
+		OPTION_ICON_SIZE = "圖示大小",
+		PARTY = "隊",
+		PARTY_LEADER = "隊長",
+		RAID = "團",
+		RAID_LEADER = "團長",
+		SAY = "說",
+		WHISPER = "聽", BN_WHISPER = "聽",
+		WHISPER_INFORM = "密", BN_WHISPER_INFORM = "聽",
+		YELL = "喊",
 	},
 }
 

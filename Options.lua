@@ -437,7 +437,7 @@ S.options = {
 					type = "execute", order = 5,
 					descStyle = "",
 					name = RESET,
-					confirm = true, confirmText = RESET.."?",
+					confirm = true, confirmText = RESET_TO_DEFAULT.."?",
 					func = function()
 						-- self note: defaults already accounts for the ERRORS special case
 						for k, v in pairs(defaults.profile.color) do
@@ -605,7 +605,7 @@ S.options = {
 					type = "execute", order = 7,
 					descStyle = "",
 					name = RESET,
-					confirm = true, confirmText = RESET.."?",
+					confirm = true, confirmText = RESET_TO_DEFAULT.."?",
 					func = function()
 						for k, v in pairs(profile.fct) do
 							if type(v) == "table" then -- COMBAT_TEXT_LOCATIONS

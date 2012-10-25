@@ -429,6 +429,8 @@ end
 
 local linkColor = {
 	achievement = "FFFF00",
+	battlepet = "FD200",
+	battlePetAbil = "4E96F7",
 	currency = "00AA00",
 	enchant = "FFD000",
 	instancelock = "FF8000",
@@ -450,15 +452,15 @@ function SCR:CHAT_MSG_BN(event, ...)
 	-- ToDo: add support for multiple toons / BNGetFriendToonInfo
 	local _, toonName, client, _, _, _, _, class = BNGetToonInfo(presenceId)
 	
+	local isPlayer = (toonName == S.playerName) -- participating in a Real ID conversation
+	if profile.FilterSelf and (isPlayer or S.INFORM[event]) then return end
+	
 	local subevent = event:match("CHAT_MSG_(.+)")
 	local isChat = S.LibSinkChat[profile.sink20OutputSink]
 	
 	if not chat[subevent] then return end
 	
-	if client == BNET_CLIENT_WOW then
-		local isPlayer = (toonName == S.playerName) -- participating in a Real ID conversation
-		if profile.FilterSelf and (isPlayer or S.INFORM[event]) then return end
-		
+	if client == BNET_CLIENT_WOW then	
 		-- you can chat with a friend from a friend, through a Real ID Conversation,
 		-- but only the toon name, and not the class/race/level/realm would be available
 		local classIcon = (class ~= "") and S.GetClassIcon(S.revLOCALIZED_CLASS_NAMES[class], 1, 1) or ""
@@ -532,10 +534,6 @@ function SCR:CHAT_MSG_STATIC(event, ...)
 	local subevent = event:match("CHAT_MSG_(.+)")	
 	if not chat[subevent] then return end
 	
-	-- decided to remove icon as well from static msg
-	--local raceIcon = S.GetRaceIcon(strupper(race).."_"..S.sexremap[sex], 1, 1)
-	--local classIcon = S.GetClassIcon(class, 1, 1)
-	--local icon = (profile.IconSize > 1 and not isChat) and raceIcon..classIcon or ""
 	local color = profile.color[subevent]
 	sourceName = profile.TrimRealm and sourceName:match("(.-)%-") or sourceName -- remove realm names
 	
