@@ -2,7 +2,7 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.07.05					---
---- Version: 0.6.6 [2012.10.25]			---
+--- Version: 0.7.0 [2012.11.29]			---
 -------------------------------------------
 --- Curse			http://www.curse.com/addons/wow/scrollingchattext
 --- WoWInterface	http://www.wowinterface.com/downloads/info20827-ScrollingChatText.html
@@ -18,7 +18,7 @@
 -- # LibSink(?) Messages with Links sometimes not even being output to a chat channel
 
 local NAME, S = ...
-S.VERSION = "0.6.6"
+S.VERSION = "0.7.0"
 S.BUILD = "Release"
 
 -- ScrollingChatText abbreviates to SCR in order to avoid confusion with SCT (ScrollingCombatText)
@@ -55,8 +55,8 @@ S.events = {
 		"CHAT_MSG_PARTY_LEADER",
 		"CHAT_MSG_RAID",
 		"CHAT_MSG_RAID_LEADER",
-		"CHAT_MSG_BATTLEGROUND",
-		"CHAT_MSG_BATTLEGROUND_LEADER",
+		"CHAT_MSG_INSTANCE_CHAT",
+		"CHAT_MSG_INSTANCE_CHAT_LEADER",
 	},
 	CHAT_MSG_BN = {
 		"CHAT_MSG_BN_WHISPER",
@@ -79,7 +79,7 @@ S.events = {
 -- event groups
 S.eventremap = {
 	ACHIEVEMENT = "GUILD_ACHIEVEMENT",
-	BATTLEGROUND = "BATTLEGROUND_LEADER",
+	INSTANCE_CHAT = "INSTANCE_CHAT_LEADER",
 	EMOTE = "TEXT_EMOTE",
 	--GUILD = "OFFICER", -- OFFICER is now standalone
 	PARTY = "PARTY_LEADER",
@@ -222,14 +222,14 @@ S.ColorOptions = {
 	[4] = "GUILD",
 	[7] = "PARTY",
 	[10] = "RAID",
-	[13] = "BATTLEGROUND",
+	[13] = "INSTANCE_CHAT",
 	[16] = "BN_WHISPER",
 	
 	[2] = "GUILD_ACHIEVEMENT",
 	[5] = "OFFICER",
 	[8] = "PARTY_LEADER",
 	[11] = "RAID_LEADER",
-	[14] = "BATTLEGROUND_LEADER",
+	[14] = "INSTANCE_CHAT_LEADER",
 	[17] = "BN_CONVERSATION",
 	
 	[3] = "SAY",

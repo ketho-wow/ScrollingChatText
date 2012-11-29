@@ -82,8 +82,8 @@ S.defaults = {
 			RAID = true,
 			RAID_LEADER = true,
 			
-			BATTLEGROUND = true,
-			BATTLEGROUND_LEADER = true,
+			INSTANCE_CHAT = true,
+			INSTANCE_CHAT_LEADER = true,
 		},
 		other = {},
 		
@@ -310,18 +310,17 @@ S.options = {
 							width = "full", descStyle = "",
 							name = L.OPTION_COLOR_MESSAGE,
 						},
-						ParentCombatText = {
+						Split = {
 							type = "toggle", order = 4,
+							width = "full", descStyle = "",
+						},
+						ParentCombatText = {
+							type = "toggle", order = 5,
 							width = "full",
-							name = L.OPTION_REPARENT_COMBAT_TEXT,
 							set = function(i, v)
 								profile[i[#i]] = v
 								CombatText:SetParent(v and WorldFrame or UIParent)
 							end,
-						},
-						Split = {
-							type = "toggle", order = 5,
-							width = "full", descStyle = "",
 						},
 					},
 				},
@@ -780,7 +779,7 @@ do
 		
 		[3] = "PARTY",
 		[6] = "RAID",
-		[9] = "BATTLEGROUND",
+		[9] = "INSTANCE_CHAT",
 	}
 	
 	local chatGroup = options.args.main.args.inline1.args
@@ -807,6 +806,7 @@ do
 	
 	-- use "Blizzard FCT" translation for option, and then color the name blue or gray in LibSink options
 	S.nameBlizzard = LibSink.args.Blizzard.name
+	options.args.advanced.args.inline1.args.ParentCombatText.name = "|cff71D5FF["..S.nameBlizzard.."]|r "..L.OPTION_REPARENT_COMBAT_TEXT
 	options.args.advanced.args.inline1.args.Split.name = "|cff71D5FF["..S.nameBlizzard.."]|r "..L.OPTION_TRIM_MESSAGE
 	
 	local funcBlizzard = function()
