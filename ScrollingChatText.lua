@@ -2,7 +2,7 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.07.05					---
---- Version: 0.7.0 [2012.11.29]			---
+--- Version: 0.8.0 [2013.04.27]			---
 -------------------------------------------
 --- Curse			http://www.curse.com/addons/wow/scrollingchattext
 --- WoWInterface	http://www.wowinterface.com/downloads/info20827-ScrollingChatText.html
@@ -18,7 +18,7 @@
 -- # LibSink(?) Messages with Links sometimes not even being output to a chat channel
 
 local NAME, S = ...
-S.VERSION = "0.7.0"
+S.VERSION = "0.8.0"
 S.BUILD = "Release"
 
 -- ScrollingChatText abbreviates to SCR in order to avoid confusion with SCT (ScrollingCombatText)
@@ -522,6 +522,5 @@ S.clients = { -- also used as remap for SC2/D3 icon
 S.CombatTextEnabled = {}
 
 for _, v in ipairs({"MikScrollingBattleText", "Parrot", "sct"}) do
-	local enabled = select(4, GetAddOnInfo(v))
-	S.CombatTextEnabled[v] = enabled and true or false
+	S.CombatTextEnabled[v] = select(4, GetAddOnInfo(v))
 end

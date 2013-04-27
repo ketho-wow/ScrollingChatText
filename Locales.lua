@@ -59,6 +59,8 @@ local L = {
 		RAID_LEADER = "RL",
 		BATTLEGROUND = "B",
 		BATTLEGROUND_LEADER = "BL",
+		INSTANCE_CHAT = "I",
+		INSTANCE_CHAT_LEADER = "IL",
 	},
 	esES = {
 		BROKER_CLICK = "|cffffffffHaz clic|r para ver opciones",
