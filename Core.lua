@@ -400,7 +400,7 @@ function SCR:CHAT_MSG(event, ...)
 		args.name = "|cff"..S.classCache[class]..sourceName.."|r"
 		
 		-- this should be done before converting to raid target icons
-		if profile.sink20OutputSink == "Blizzard" and profile.Split then
+		if profile.Split then
 			msg = SplitMessage(msg)
 		end
 		
@@ -473,7 +473,7 @@ function SCR:CHAT_MSG_BN(event, ...)
 		local name = isChat and toonName or realName -- can't SendChatMessage Real ID Names, which is understandable
 		args.name = (class ~= "") and "|cff"..S.classCache[S.revLOCALIZED_CLASS_NAMES[class]]..name.."|r" or "|cff"..chanColor..name.."|r"
 		
-		if profile.sink20OutputSink == "Blizzard" and profile.Split then
+		if profile.Split then
 			msg = SplitMessage(msg)
 		end
 		
@@ -591,7 +591,7 @@ function SCR:CHAT_MSG_OTHER(event, ...)
 	
 	-- To Do: SplitMessage is not yet tuned for static messages
 	--[[
-	if profile.sink20OutputSink == "Blizzard" and profile.Split then
+	if profile.Split then
 		msg = SplitMessage(msg)
 	end
 	]]
