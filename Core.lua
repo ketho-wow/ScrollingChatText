@@ -11,7 +11,8 @@ local profile
 local chat, other, filter
 
 local pairs, ipairs = pairs, ipairs
-local strfind, strsub, gsub = strfind, strsub, gsub
+local strfind, gsub = strfind, gsub
+local utf8len, utf8sub = string.utf8len, string.utf8sub
 
 local time = time
 
@@ -319,7 +320,7 @@ local space, indexed = {}, {}
 -- word placement and char length of icon/time/name/channel
 local function SplitMessage(msg)
 	-- rawify hyperlinks
-	local msglen = strlen(gsub(msg, "|c.-(%[.-%]).-|r", "%1"))
+	local msglen = utf8len(gsub(msg, "|c.-(%[.-%]).-|r", "%1"))
 	
 	if msglen > 75 then
 		
@@ -353,11 +354,11 @@ local function SplitMessage(msg)
 		-- divide at possibly the closest positions
 		for _, v in ipairs(indexed) do
 			if first and v > first then
-				msg = strsub(msg, 1, v).."\n"..strsub(msg, v + 1)
+				msg = utf8sub(msg, 1, v).."\n"..utf8sub(msg, v + 1)
 				first = nil
 			elseif second and v > second then
 				-- account for characters being moved +1 to the right
-				msg = strsub(msg, 1, v + 1).."\n"..strsub(msg, v + 2)
+				msg = utf8sub(msg, 1, v + 1).."\n"..utf8sub(msg, v + 2)
 				second = nil
 				break
 			end
@@ -379,14 +380,15 @@ function SCR:CHAT_MSG(event, ...)
 	if not guid or guid == "" then return end
 	
 	local isChat = S.LibSinkChat[profile.sink20OutputSink]
-	local isPlayer = (sourceName == S.playerName)
+	local isPlayer = strfind(sourceName, S.playerName)
 	if profile.FilterSelf and (isPlayer or S.INFORM[event]) then return end -- filter self
 	if isChat and isPlayer and not profile.FilterSelf then return end -- prevent looping your own chat
 	
 	local subevent = event:match("CHAT_MSG_(.+)")
 	-- options filter
 	if chat[subevent] or (subevent == "CHANNEL" and chat["CHANNEL"..channelID]) then
-		local _, class, _, race, sex, realm = GetPlayerInfoByGUID(guid)
+		
+		local class, race, sex = unpack(S.playerCache[guid])
 		if not class then return end
 		
 		local raceIcon = S.GetRaceIcon(strupper(race).."_"..S.sexremap[sex], 1, 1)
@@ -452,7 +454,7 @@ function SCR:CHAT_MSG_BN(event, ...)
 	-- ToDo: add support for multiple toons / BNGetFriendToonInfo
 	local _, toonName, client, _, _, _, _, class = BNGetToonInfo(presenceId)
 	
-	local isPlayer = (toonName == S.playerName) -- participating in a Real ID conversation
+	local isPlayer = strfind(toonName, S.playerName) -- participating in a Real ID conversation
 	if profile.FilterSelf and (isPlayer or S.INFORM[event]) then return end
 	
 	local subevent = event:match("CHAT_MSG_(.+)")
@@ -502,7 +504,7 @@ function SCR:CHAT_MSG_BN(event, ...)
 		args.msg = "|cff"..chanColor..msg.."|r"
 		
 		self:Output(profile.Message, args, profile.color[subevent])
-	elseif client == BNET_CLIENT_SC2 or client == BNET_CLIENT_D3 then
+	else
 		args.icon = (profile.IconSize > 1 and not isChat) and "|TInterface\\ChatFrame\\UI-ChatIcon-"..S.clients[client]..":14:14:0:-1|t" or ""
 		
 		local chanColor = S.chatCache[subevent]
@@ -522,12 +524,12 @@ function SCR:CHAT_MSG_STATIC(event, ...)
 	
 	local msg, sourceName, _, _, destName, _, _, _, _, _, _, guid = ...
 	if not guid or guid == "" then return end
-	local _, class, _, race, sex = GetPlayerInfoByGUID(guid)
+	local class, race, sex = unpack(S.playerCache[guid])
 	if not class then return end
 	
 	-- filter own achievs/emotes; avoid spamloop
 	local isChat = S.LibSinkChat[profile.sink20OutputSink]
-	local isPlayer = (sourceName == S.playerName)
+	local isPlayer = strfind(sourceName, S.playerName)
 	if profile.FilterSelf and isPlayer then return end
 	if isChat and isPlayer and not profile.FilterSelf then return end
 	
@@ -576,7 +578,7 @@ function SCR:CHAT_MSG_OTHER(event, ...)
 			end
 		else
 			if event == "CHAT_MSG_CHANNEL_JOIN" or event == "CHAT_MSG_CHANNEL_LEAVE" then
-				local _, class, _, race, sex = GetPlayerInfoByGUID(guid)
+				local class, race, sex = unpack(S.playerCache[guid])
 				msg = "["..chanID.."] "..subEvents:format("|cff"..S.classCache[class].."["..sourceName.."]|r")
 			end
 		end

@@ -313,10 +313,12 @@ S.options = {
 						Split = {
 							type = "toggle", order = 4,
 							width = "full", descStyle = "",
+							name = L.OPTION_TRIM_MESSAGE,
 						},
 						ParentCombatText = {
 							type = "toggle", order = 5,
 							width = "full",
+							name = L.OPTION_REPARENT_COMBAT_TEXT,
 							set = function(i, v)
 								profile[i[#i]] = v
 								CombatText:SetParent(v and WorldFrame or UIParent)
@@ -806,8 +808,6 @@ do
 	
 	-- use "Blizzard FCT" translation for option, and then color the name blue or gray in LibSink options
 	S.nameBlizzard = LibSink.args.Blizzard.name
-	options.args.advanced.args.inline1.args.ParentCombatText.name = "|cff71D5FF["..S.nameBlizzard.."]|r "..L.OPTION_REPARENT_COMBAT_TEXT
-	options.args.advanced.args.inline1.args.Split.name = L.OPTION_TRIM_MESSAGE
 	
 	local funcBlizzard = function()
 		return "|cff"..(SHOW_COMBAT_TEXT == "1" and "71D5FF" or "979797")..S.nameBlizzard.."|r"

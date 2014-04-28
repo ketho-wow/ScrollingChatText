@@ -2,7 +2,7 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.07.05					---
---- Version: 1.0 [2013.10.01]			---
+--- Version: 1.1 [2014.04.28]			---
 -------------------------------------------
 --- Curse			http://www.curse.com/addons/wow/scrollingchattext
 --- WoWInterface	http://www.wowinterface.com/downloads/info20827-ScrollingChatText.html
@@ -358,6 +358,14 @@ S.colorremap = {
 	--------------
 	--- Colors ---
 	--------------
+
+-- only need to look up an units class once
+S.playerCache = setmetatable({}, {__index = function(t, k)
+	local _, class, _, race, sex = GetPlayerInfoByGUID(k)
+	local v =  {class, race, sex}
+	rawset(t, k, v)
+	return v
+end})
 
 S.classCache = setmetatable({}, {__index = function(t, k)
 	local color = CUSTOM_CLASS_COLORS and CUSTOM_CLASS_COLORS[k] or profile.color[k]

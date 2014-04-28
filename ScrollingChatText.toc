@@ -1,5 +1,5 @@
 ## Interface: 50400
-## Version: 1.0
+## Version: 1.1
 ## Title: ScrollingChatText
 ## Notes: Shows Chat as Combat Text
 ## Author: Ketho @ EU-Boulderfist
@@ -25,6 +25,8 @@ Libs\LibSink-2.0\lib.xml
 
 Libs\AceGUI-3.0-SharedMediaWidgets\widget.xml
 Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
+
+Libs\UTF8\utf8.lua
 
 Locales.lua
 
