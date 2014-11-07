@@ -2,7 +2,7 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.07.05					---
---- Version: 1.1 [2014.04.28]			---
+--- Version: 1.2 [2014.11.08]			---
 -------------------------------------------
 --- Curse			http://www.curse.com/addons/wow/scrollingchattext
 --- WoWInterface	http://www.wowinterface.com/downloads/info20827-ScrollingChatText.html
@@ -521,6 +521,10 @@ S.clients = { -- also used as remap for SC2/D3 icon
 	[BNET_CLIENT_WOW] = "WOW",
 	[BNET_CLIENT_SC2] = "SC2",
 	[BNET_CLIENT_D3] = "D3",
+	[BNET_CLIENT_WTCG] = "WTCG",
+	[BNET_CLIENT_APP] = "Battlenet",
+	[BNET_CLIENT_HEROES] = "HotS",
+	[BNET_CLIENT_CLNT] = "Battlenet", -- client ..?
 }
 
 	--------------------------
