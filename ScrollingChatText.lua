@@ -2,9 +2,9 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.07.05					---
---- Version: 1.2 [2014.11.08]			---
+--- Version: 1.3 [2016.03.23]			---
 -------------------------------------------
---- Curse			http://www.curse.com/addons/wow/scrollingchattext
+--- Curse			http://mods.curse.com/addons/wow/scrollingchattext
 --- WoWInterface	http://www.wowinterface.com/downloads/info20827-ScrollingChatText.html
 
 -- To Do:
@@ -61,7 +61,6 @@ S.events = {
 	CHAT_MSG_BN = {
 		"CHAT_MSG_BN_WHISPER",
 		"CHAT_MSG_BN_WHISPER_INFORM", -- self
-		"CHAT_MSG_BN_CONVERSATION",
 	},
 	CHAT_MSG_STATIC = {
 		"CHAT_MSG_EMOTE",
@@ -85,7 +84,7 @@ S.eventremap = {
 	PARTY = "PARTY_LEADER",
 	RAID = "RAID_LEADER", -- left out RAID_WARNING
 	WHISPER = "WHISPER_INFORM",
-	BN_WHISPER = {"BN_WHISPER_INFORM", "BN_CONVERSATION"},
+	BN_WHISPER = "BN_WHISPER_INFORM",
 }
 
 -- sourceName in these events are the same as destName
@@ -137,7 +136,6 @@ S.OtherEvents = {
 		"CHAT_MSG_BN_INLINE_TOAST_ALERT",
 		"CHAT_MSG_BN_INLINE_TOAST_BROADCAST",
 		"CHAT_MSG_BN_INLINE_TOAST_BROADCAST_INFORM",
-		"CHAT_MSG_BN_INLINE_TOAST_CONVERSATION",
 	},
 	-- added in 5.0.4
 	PET_BATTLE_COMBAT_LOG = "CHAT_MSG_PET_BATTLE_COMBAT_LOG",
@@ -169,7 +167,6 @@ S.OtherSubEvents = {
 	CHAT_MSG_BN_INLINE_TOAST_ALERT = {
 		--BROADCAST = BN_INLINE_TOAST_BROADCAST, -- 2 args
 		--BROADCAST_INFORM = BN_INLINE_TOAST_BROADCAST_INFORM, -- no args
-		--CONVERSATION = BN_INLINE_TOAST_CONVERSATION,
 		--FRIEND_ADDED = BN_INLINE_TOAST_FRIEND_ADDED,
 		FRIEND_OFFLINE = BN_INLINE_TOAST_FRIEND_OFFLINE,
 		FRIEND_ONLINE = BN_INLINE_TOAST_FRIEND_ONLINE,
@@ -230,7 +227,6 @@ S.ColorOptions = {
 	[8] = "PARTY_LEADER",
 	[11] = "RAID_LEADER",
 	[14] = "INSTANCE_CHAT_LEADER",
-	[17] = "BN_CONVERSATION",
 	
 	[3] = "SAY",
 	[6] = "YELL",
@@ -313,7 +309,6 @@ S.EventToColor = {
 	CHAT_MSG_BN_INLINE_TOAST_ALERT = "BN_INLINE_TOAST_ALERT",
 	CHAT_MSG_BN_INLINE_TOAST_BROADCAST = "BN_INLINE_TOAST_ALERT", -- same
 	CHAT_MSG_BN_INLINE_TOAST_BROADCAST_INFORM = "BN_INLINE_TOAST_ALERT", -- same
-	CHAT_MSG_BN_INLINE_TOAST_CONVERSATION = "BN_INLINE_TOAST_ALERT", -- same
 	CHAT_MSG_PET_BATTLE_COMBAT_LOG = "PET_BATTLE_COMBAT_LOG",
 	CHAT_MSG_PET_BATTLE_INFO = "PET_BATTLE_INFO",
 	
@@ -517,14 +512,16 @@ S.LibSinkChat = {
 	--- Game Clients ---
 	--------------------
 
+-- https://github.com/Gethe/wow-ui-textures/tree/live/CHATFRAME
 S.clients = { -- also used as remap for SC2/D3 icon
 	[BNET_CLIENT_WOW] = "WOW",
 	[BNET_CLIENT_SC2] = "SC2",
 	[BNET_CLIENT_D3] = "D3",
 	[BNET_CLIENT_WTCG] = "WTCG",
 	[BNET_CLIENT_APP] = "Battlenet",
-	[BNET_CLIENT_HEROES] = "HotS",
-	[BNET_CLIENT_CLNT] = "Battlenet", -- client ..?
+	[BNET_CLIENT_HEROES] = "HotS", -- different than FrameXML\BNet.lua
+	[BNET_CLIENT_OVERWATCH] = "Overwatch", -- same
+	[BNET_CLIENT_CLNT] = "Battlenet",
 }
 
 	--------------------------

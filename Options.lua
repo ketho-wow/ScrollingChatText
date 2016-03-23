@@ -71,7 +71,6 @@ S.defaults = {
 			WHISPER_INFORM = true, -- self
 			BN_WHISPER = true,
 			BN_WHISPER_INFORM = true, -- self
-			BN_CONVERSATION = true,
 			
 			GUILD = true,
 			OFFICER = true,
@@ -627,68 +626,6 @@ S.options = {
 				},
 			},
 		},
-		extra = {
-			type = "group", order = 5,
-			name = L.OPTION_TAB_EXTRA,
-			handler = SCR,
-			get = "GetValue",
-			set = "SetValueLevel",
-			args = {
-				inline1 = {
-					type = "group", order = 1,
-					name = " "..L.OPTION_GROUP_LEVELUP,
-					inline = true,
-					args = {
-						LevelParty = {
-							type = "toggle", order = 1,
-							width = "full", descStyle = "",
-							name = "|cffA8A8FF"..PARTY.."|r",
-						},
-						LevelRaid = {
-							type = "toggle", order = 2,
-							width = "full", descStyle = "",
-							name = "|cffFF7F00"..RAID.."|r",
-						},
-						LevelGuild = {
-							type = "toggle", order = 3,
-							width = "full", descStyle = "",
-							name = "|cff40FF40"..GUILD.."|r",
-						},
-						LevelFriend = {
-							type = "toggle", order = 4,
-							width = "full", descStyle = "",
-							name = FRIENDS_WOW_NAME_COLOR_CODE..FRIENDS.."|r",
-						},
-						LevelRealID = {
-							type = "toggle", order = 5,
-							width = "full", descStyle = "",
-							name = FRIENDS_BNET_NAME_COLOR_CODE..BATTLENET_FRIEND.."|r",
-						},
-					},
-				},
-				LevelMessage = {
-					type = "input", order = 2,
-					width = "full",
-					name = "",
-					set = "SetMessage",
-				},
-				LevelPreview = {
-					type = "description", order = 3,
-					fontSize = "large",
-					name = function()
-						local raceIcon = S.GetRaceIcon(strupper(select(2, UnitRace("player"))).."_"..S.sexremap[UnitSex("player")], 1, 3)
-						local classIcon = S.GetClassIcon(select(2, UnitClass("player")), 2, 3)
-						args.icon = (profile.IconSize > 1) and raceIcon..classIcon or ""
-						args.time = S.GetTimestamp()
-						args.chan = IsInRaid() and "|cffFF7F00"..RAID.."|r" or "|cffA8A8FF"..PARTY.."|r"
-						args.name = "|cff"..S.classCache[S.playerClass]..PLAYER.."|r"
-						local playerLevel = UnitLevel("player")
-						args.level = "|cffADFF2F"..playerLevel + (playerLevel == maxLevel and 0 or 1).."|r"
-						return "  "..SCR:ReplaceArgs(profile.LevelMessage, args)
-					end,
-				},
-			},
-		},
 	},
 }
 
@@ -812,12 +749,13 @@ do
 	local funcBlizzard = function()
 		return "|cff"..(SHOW_COMBAT_TEXT == "1" and "71D5FF" or "979797")..S.nameBlizzard.."|r"
 	end
-	
+	-- conflicted with other addons that embedded libsink
+	--[[
 	for i, v in ipairs({"Blizzard", "MikSBT", "Parrot", "SCT"}) do
 		LibSink.args[v].name = (v == "Blizzard") and funcBlizzard or "|cff71D5FF"..LibSink.args[v].name.."|r"
 		LibSink.args[v].order = i
 	end
-	
+	]]
 	-- disabled instead of hidden; little bit confusing me now
 	LibSink.args.Blizzard.disabled = LibSink.args.Blizzard.hidden
 	LibSink.args.Blizzard.hidden = nil

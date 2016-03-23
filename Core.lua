@@ -41,7 +41,6 @@ local appKey = {
 	"ScrollingChatText_Advanced",
 	"ScrollingChatText_Colors",
 	"ScrollingChatText_FCT",
-	"ScrollingChatText_Extra",
 }
 
 -- using ipairs to iterate through appKey by index
@@ -51,7 +50,6 @@ local appValue = {
 	ScrollingChatText_Advanced = options.args.advanced,
 	ScrollingChatText_FCT = options.args.fct,
 	ScrollingChatText_Colors = options.args.colors,
-	ScrollingChatText_Extra = options.args.extra,
 }
 
 function SCR:OnInitialize()
@@ -144,26 +142,6 @@ function SCR:OnEnable()
 	
 	-- init combat state
 	combatState = UnitAffectingCombat("player")
-	
-	-- this kinda defeats the purpose of registering/unregistering events according to options <.<
-	self:ScheduleRepeatingTimer(function()
-		-- the returns of UnitLevel() aren't yet updated on UNIT_LEVEL
-		if profile.LevelParty or profile.LevelRaid then
-			self:UNIT_LEVEL()
-		end
-		if profile.LevelGuild then
-			GuildRoster() -- fires GUILD_ROSTER_UPDATE
-		end
-		-- FRIENDLIST_UPDATE doesn't fire on actual friend levelups
-		-- the returns of GetFriendInfo() only get updated when FRIENDLIST_UPDATE fires
-		if profile.LevelFriend then
-			ShowFriends() -- fires FRIENDLIST_UPDATE
-		end
-		-- BN_FRIEND_INFO_CHANGED doesn't fire on login; but it does on actual levelups; just to be sure
-		if profile.LevelRealID then
-			self:BN_FRIEND_INFO_CHANGED()
-		end
-	end, 11)
 end
 
 function SCR:OnDisable()
@@ -184,7 +162,7 @@ function SCR:RefreshDB()
 	self:SetSinkStorage(profile) -- LibSink savedvars
 	
 	-- update table references in other files
-	for i = 1, 3 do
+	for i = 1, 2 do
 		self["RefreshDB"..i](self)
 	end
 	
@@ -216,7 +194,6 @@ function SCR:RefreshDB()
 	end
 	
 	self:WipeCache() -- renew color caches
-	self:RefreshLevelEvents() -- register/unregister level events according to options
 	
 	-- parent CombatText to WorldFrame so you can still see it while the UI is hidden
 	if profile.ParentCombatText and CombatText then
@@ -451,10 +428,10 @@ function SCR:CHAT_MSG_BN(event, ...)
 	
 	local msg, realName, _, _, _, _, _, _, _, _, _, _, presenceId = ...
 	
-	-- ToDo: add support for multiple toons / BNGetFriendToonInfo
-	local _, toonName, client, _, _, _, _, class = BNGetToonInfo(presenceId)
+	-- ToDo: add support for multiple toons / BNGetFriendGameAccountInfo
+	local _, toonName, client, _, _, _, _, class = BNGetGameAccountInfo(presenceId)
 	
-	local isPlayer = strfind(toonName, S.playerName) -- participating in a Real ID conversation
+	local isPlayer = strfind(toonName, S.playerName) -- participating in Real ID whispers
 	if profile.FilterSelf and (isPlayer or S.INFORM[event]) then return end
 	
 	local subevent = event:match("CHAT_MSG_(.+)")
@@ -463,11 +440,11 @@ function SCR:CHAT_MSG_BN(event, ...)
 	if not chat[subevent] then return end
 	
 	if client == BNET_CLIENT_WOW then	
-		-- you can chat with a friend from a friend, through a Real ID Conversation,
+		-- you can chat with a friend from a friend, through Real ID whispers
 		-- but only the toon name, and not the class/race/level/realm would be available
 		local classIcon = (class ~= "") and S.GetClassIcon(S.revLOCALIZED_CLASS_NAMES[class], 1, 1) or ""
 		args.icon = (profile.IconSize > 1 and not isChat) and classIcon or ""
-		-- can't add (or very hard to) add Race Icons, since the BNGetToonInfo return values are localized; also would need to know the sex
+		-- can't add (or very hard to) add Race Icons, since the BNGetGameAccountInfo return values are localized; also would need to know the sex
 		
 		local chanColor = S.chatCache[subevent]
 		args.chan = "|cff"..chanColor..L[subevent].."|r"

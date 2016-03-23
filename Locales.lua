@@ -1,4 +1,4 @@
-﻿local _, S = ...
+local _, S = ...
 
 	---------------------------------------------------------
 	--- Credits to Prat-3.0 for the Channel Abbreviations ---
@@ -8,7 +8,6 @@ local L = {
 	deDE = {
 		BATTLEGROUND = "BG",
 		BATTLEGROUND_LEADER = "BL",
-		BN_CONVERSATION = "BN", -- Needs review
 		BROKER_CLICK = "|cffFFFFFFKlickt|r, um das Optionsmenü zu öffnen",
 		BROKER_SHIFT_CLICK = "|cffFFFFFFShift-klickt|r, um dieses AddOn ein-/auszuschalten",
 		EMOTE = "E",
@@ -23,7 +22,6 @@ local L = {
 		OPTION_ICON_SIZE = "Symbolgröße",
 		OPTION_REPARENT_COMBAT_TEXT = "Kampftext loslösen und ins Weltfenster (WorldFrame) einbetten", -- Needs review
 		OPTION_SHOW_NOTINCOMBAT = "Nicht im Kampf", -- Needs review
-		OPTION_TAB_EXTRA = "Extras",
 		OPTION_TRIM_MESSAGE = "Lange Nachrichten unterteilen", -- Needs review
 		OPTION_TRIM_REALM_NAME = "Realmnamen kürzen", -- Needs review
 		PARTY = "P",
@@ -36,7 +34,6 @@ local L = {
 		YELL = "Y",
 	},
 	enUS = {
-		OPTION_TAB_EXTRA = "Extra",
 		OPTION_GROUP_LEVELUP = LEVEL.." Up",
 		OPTION_GROUP_SHOW_WHEN = "Show when...",
 		OPTION_FILTER_SELF = FILTER.." self",
@@ -63,7 +60,6 @@ local L = {
 		EMOTE = "E", TEXT_EMOTE = "E", -- deprecated
 		WHISPER = "W From", BN_WHISPER = "W From",
 		WHISPER_INFORM = "W To", BN_WHISPER_INFORM = "W To",
-		BN_CONVERSATION = "BN",
 		GUILD = "G",
 		OFFICER = "O",
 		PARTY = "P",
@@ -96,7 +92,6 @@ local L = {
 		OPTION_FONT = "글꼴",
 		OPTION_GROUP_LEVELUP = "레벨업",
 		OPTION_ICON_SIZE = "아이콘 크기",
-		OPTION_TAB_EXTRA = "추가기능",
 		PARTY = "파티", PARTY_LEADER = "파티",
 		RAID = "공대",
 		RAID_LEADER = "공대장",

@@ -1,5 +1,5 @@
-## Interface: 60000
-## Version: 1.2
+## Interface: 60200
+## Version: 1.3
 ## Title: ScrollingChatText
 ## Notes: Shows Chat as Combat Text
 ## Author: Ketho @ EU-Boulderfist
@@ -33,5 +33,4 @@ Locales.lua
 ScrollingChatText.lua
 Options.lua
 Core.lua
-Extra.lua
 Broker.lua
