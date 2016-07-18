@@ -1,8 +1,6 @@
 local NAME, S = ...
 local SCR = ScrollingChatText
 
-local LSM = LibStub("LibSharedMedia-3.0")
-
 local L = S.L
 local profile
 local chat, other, filter
@@ -18,7 +16,6 @@ local pairs, ipairs = pairs, ipairs
 local format = format
 
 local args = {}
-local maxLevel = MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()]
 
 	--------------------------
 	--- Example Timestamps ---
@@ -55,6 +52,10 @@ local testRange = {
 	--- Defaults ---
 	----------------
 
+-- force updating COMBAT_TEXT_FLOAT_MODE and COMBAT_TEXT_LOCATIONS before we get our defaults
+COMBAT_TEXT_FLOAT_MODE = GetCVar("floatingCombatTextFloatMode")
+CombatText_UpdateDisplayedMessages()
+
 S.defaults = {
 	profile = {
 		chat = {
@@ -88,7 +89,6 @@ S.defaults = {
 		
 		sink20OutputSink = "Blizzard",
 		Message = "<ICON> [<TIME>] [<CHAN>] [<NAME>]: <MSG>",
-		LevelMessage = "<ICON> [<CHAN>] [<NAME>]: "..LEVEL.." <LEVEL>",
 		
 		FilterSelf = true,
 		TrimRealm = true,
@@ -99,20 +99,17 @@ S.defaults = {
 			NoCombat = true,
 			
 			Solo = true,
-			Party = true,
-			Raid = true,
+			Group = true,
 		},
 		
 		Timestamp = 6, -- 15:27
 		IconSize = 16,
-		FontWidget = LSM:GetDefault(LSM.MediaType.FONT),
-		FontSize = 16,
 		
 		fct = {
 			COMBAT_TEXT_SCALE = CombatText:GetScale(), -- can also just assign 1 maybe lol
 			COMBAT_TEXT_SCROLLSPEED = COMBAT_TEXT_SCROLLSPEED,
 			COMBAT_TEXT_FADEOUT_TIME = COMBAT_TEXT_FADEOUT_TIME,
-			COMBAT_TEXT_LOCATIONS = COMBAT_TEXT_LOCATIONS,
+			COMBAT_TEXT_LOCATIONS = CopyTable(COMBAT_TEXT_LOCATIONS),
 		},
 		color = {
 			-- other colors get imported from defaults
@@ -213,19 +210,6 @@ S.options = {
 					name = CHANNELS,
 					inline = true,
 					args = {}, -- see Core.lua:CHANNEL_UI_UPDATE
-				},
-				Reminder = {
-					type = "description", order = 3,
-					fontSize = "large",
-					name = "\n |TInterface\\OptionsFrame\\UI-OptionsFrame-NewFeatureIcon:16:16:2:5|t |cff71D5FF["..COMBAT_TEXT_LABEL.."]|r |cffFF0000"..VIDEO_OPTIONS_DISABLED.."|r",
-					hidden = function()
-						if SHOW_COMBAT_TEXT == "1" then return true end
-						for _, v in pairs(S.CombatTextEnabled) do
-							if v then
-								return true
-							end
-						end
-					end,
 				},
 				LibSink = SCR:GetSinkAce3OptionsDataTable(),
 				Message = {
@@ -348,15 +332,10 @@ S.options = {
 							descStyle = "",
 							name = SOLO,
 						},
-						Party = {
+						Group = {
 							type = "toggle", order = 5,
 							descStyle = "",
-							name = "|cffA8A8FF"..PARTY.."|r",
-						},
-						Raid = {
-							type = "toggle", order = 6,
-							descStyle = "",
-							name = "|cffFF7F00"..RAID.."|r",
+							name = "|cffA8A8FF"..GROUP.."|r",
 						},
 					},
 				},
@@ -376,20 +355,6 @@ S.options = {
 						wipe(S.raceIconCache)
 						wipe(S.classIconCache)
 					end,
-				},
-				newline = {type = "description", order = 5, name = ""},
-				FontWidget = {
-					type = "select", order = 6,
-					descStyle = "",
-					values = LSM:HashTable(LSM.MediaType.FONT),
-					dialogControl = "LSM30_Font",
-					name = " "..L.OPTION_FONT.." |cffFF0000(NYI)|r",
-				},
-				FontSize = {
-					type = "select", order = 7,
-					descStyle = "",
-					values = {},
-					name = " "..FONT_SIZE.." |cffFF0000(NYI)|r",
 				},
 			},
 		},
@@ -743,21 +708,10 @@ do
 	LibSink.inline = true
 	LibSink.order = 4
 	
-	-- use "Blizzard FCT" translation for option, and then color the name blue or gray in LibSink options
-	S.nameBlizzard = LibSink.args.Blizzard.name
+	-- use "Blizzard FCT" translation for option
+	options.args.fct.name = LibSink.args.Blizzard.name
 	
-	local funcBlizzard = function()
-		return "|cff"..(SHOW_COMBAT_TEXT == "1" and "71D5FF" or "979797")..S.nameBlizzard.."|r"
-	end
-	-- conflicted with other addons that embedded libsink
-	--[[
-	for i, v in ipairs({"Blizzard", "MikSBT", "Parrot", "SCT"}) do
-		LibSink.args[v].name = (v == "Blizzard") and funcBlizzard or "|cff71D5FF"..LibSink.args[v].name.."|r"
-		LibSink.args[v].order = i
-	end
-	]]
-	-- disabled instead of hidden; little bit confusing me now
-	LibSink.args.Blizzard.disabled = LibSink.args.Blizzard.hidden
+	-- dont let libsink hide the Blizzard FCT option
 	LibSink.args.Blizzard.hidden = nil
 end
 
@@ -840,12 +794,6 @@ do
 		iconSize[i] = i
 	end
 	iconSize[1] = NONE
-	
-	local fontSize = options.args.advanced.args.FontSize.values
-	
-	for i = 2, 32, 2 do
-		fontSize[i] = i
-	end
 end
 
 	--------------
@@ -916,9 +864,3 @@ do
 		}
 	end
 end
-
-	--------------------
-	--- Blizzard FCT ---
-	--------------------
-
-options.args.fct.name = S.nameBlizzard

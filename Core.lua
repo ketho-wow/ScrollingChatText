@@ -3,7 +3,6 @@ local SCR = ScrollingChatText
 
 local ACR = LibStub("AceConfigRegistry-3.0")
 local ACD = LibStub("AceConfigDialog-3.0")
-local LSM = LibStub("LibSharedMedia-3.0")
 
 local L = S.L
 local options = S.options
@@ -102,20 +101,12 @@ function SCR:OnInitialize()
 	options.args.advanced.args.inline1.args.ParentCombatText.desc = format(UI_HIDDEN, GetBindingText(GetBindingKey("TOGGLEUI"), "KEY_"))
 	S.defaultLang = GetDefaultLanguage()
 	
-	-- SHOW_COMBAT_TEXT seems to be "1" instead of "0", at loadtime regardless if the option was disabled (but we're delayed anyway again)
-	if profile.sink20OutputSink == "Blizzard" and SHOW_COMBAT_TEXT == "0" then
-		if S.CombatTextEnabled.MikScrollingBattleText then
-			profile.sink20OutputSink = "MikSBT" 
-		elseif S.CombatTextEnabled.Parrot then
-			profile.sink20OutputSink = "Parrot" 
-		elseif S.CombatTextEnabled.sct then
-			profile.sink20OutputSink = "SCT" 
-		-- assign to Prat-3.0 Popup if all Combat Text sinks are disabled,
-		-- otherwise LibSink will fallback to UIErrorsFrame by default
-		elseif select(4, GetAddOnInfo("Prat-3.0")) then
-			profile.sink20OutputSink = "Popup" 
-		end
-	end
+	-- Legion: Blizzard_CombatText is disabled by default, but we listed it as a dependency so its enabled
+	-- we still want that output sink, without enabling the option for FCT, but ...
+	
+	-- CombatText_AddMessage() actually works, but LibSink checks for (SHOW_COMBAT_TEXT = "1")
+	-- and we use LibSink. So the only way to use that output is to also enable Blizzard FCT. will work around it
+	
 	self:OnEnable() -- delayed OnInitialize done, call OnEnable again now
 end
 
@@ -278,14 +269,11 @@ local function StateFilter()
 		local combat = filter.Combat and combatState
 		local nocombat = filter.NoCombat and not combatState
 		
-		local isRaid = IsInRaid()
-		local isParty = IsInGroup()
+		local isGroup = IsInGroup()
+		local group = filter.Group and isGroup
+		local solo = filter.Solo and not isGroup
 		
-		local raid = filter.Raid and isRaid
-		local party = filter.Party and (not isRaid and isParty)
-		local solo = filter.Solo and (not isRaid and not isParty)
-		
-		lastState = (combat or nocombat) and (raid or party or solo)
+		lastState = (combat or nocombat) and (group or solo)
 	end
 	
 	return lastState
@@ -345,7 +333,6 @@ local function SplitMessage(msg)
 end
 
 local args = {}
-local fonts = LSM:HashTable(LSM.MediaType.FONT)
 
 local ICON_LIST = ICON_LIST
 local ICON_TAG_LIST = ICON_TAG_LIST
@@ -368,8 +355,11 @@ function SCR:CHAT_MSG(event, ...)
 		local class, race, sex = unpack(S.playerCache[guid])
 		if not class then return end
 		
-		local raceIcon = S.GetRaceIcon(strupper(race).."_"..S.sexremap[sex], 1, 1)
-		local classIcon = S.GetClassIcon(class, 1, 1)
+		local x1, y1, x2, y2 = 4, 0, 4, 0 -- Legion: something is screwing with the icon positioning in FCT
+		if profile.sink20OutputSink == "Blizzard" then x1, y1, x2, y2 = -14, -8, 0, -8 end
+		local raceIcon = S.GetRaceIcon(strupper(race).."_"..S.sexremap[sex], x1, y1)
+		local classIcon = S.GetClassIcon(class, x2, y2)
+		
 		args.icon = (profile.IconSize > 1 and not isChat) and raceIcon..classIcon or ""
 		
 		local chanColor = S.chatCache[(subevent == "CHANNEL") and "CHANNEL"..channelID or subevent]
@@ -402,7 +392,7 @@ function SCR:CHAT_MSG(event, ...)
 		msg = msg:gsub("|r", "|r|cff"..chanColor)
 		args.msg = "|cff"..chanColor..msg.."|r"
 		
-		self:Output(profile.Message, args, profile.color[subevent])
+		self:ChatOutput(profile.Message, args, profile.color[subevent])
 	end
 end
 
@@ -480,7 +470,7 @@ function SCR:CHAT_MSG_BN(event, ...)
 		
 		args.msg = "|cff"..chanColor..msg.."|r"
 		
-		self:Output(profile.Message, args, profile.color[subevent])
+		self:ChatOutput(profile.Message, args, profile.color[subevent])
 	else
 		args.icon = (profile.IconSize > 1 and not isChat) and "|TInterface\\ChatFrame\\UI-ChatIcon-"..S.clients[client]..":14:14:0:-1|t" or ""
 		
@@ -492,7 +482,7 @@ function SCR:CHAT_MSG_BN(event, ...)
 		
 		args.msg = "|cff"..chanColor..msg.."|r"
 		
-		self:Output(profile.Message, args, profile.color[subevent])
+		self:ChatOutput(profile.Message, args, profile.color[subevent])
 	end
 end
 
@@ -524,7 +514,7 @@ function SCR:CHAT_MSG_STATIC(event, ...)
 		msg = msg:format("|cffFFFFFF[|r|cff"..S.classCache[class]..sourceName.."|r|cffFFFFFF]|r")
 	end
 	
-	self:Pour(msg, color.r, color.g, color.b, fonts[profile.FontWidget], profile.FontSize)
+	self:Output(msg, color)
 end
 
 -- events are (un)registered according to options, no need for filtering
@@ -577,7 +567,7 @@ function SCR:CHAT_MSG_OTHER(event, ...)
 	
 	local color = profile.color[S.EventToColor[event]]
 	
-	self:Pour(msg, color.r, color.g, color.b, fonts[profile.FontWidget], profile.FontSize)
+	self:Output(msg, color)
 end
 
 function SCR:ReplaceArgs(msg, args)
@@ -595,12 +585,23 @@ function SCR:ReplaceArgs(msg, args)
 	return msg
 end
 
-local nokey = {}
+local nokey = {r=1, g=1, b=1}
 
-function SCR:Output(msg, args, color)
+function SCR:ChatOutput(msg, args, color)
 	args.time = S.GetTimestamp()
 	msg = self:ReplaceArgs(msg, args)
 	
 	color = profile.ColorMessage and color or nokey
-	self:Pour(msg, color.r, color.g, color.b, fonts[profile.FontWidget], profile.FontSize)
+	
+	self:Output(msg, color)
+end
+
+function SCR:Output(msg, color)
+	-- Legion: if we can to output to Blizzard FCT but LibSink sees
+	--  that Blizzard FCT is disabled (only the option), then we work around it
+	if profile.sink20OutputSink == "Blizzard" and SHOW_COMBAT_TEXT == "0" then
+		CombatText_AddMessage(msg, COMBAT_TEXT_SCROLL_FUNCTION, color.r, color.g, color.b)
+	else
+		self:Pour(msg, color.r, color.g, color.b)
+	end
 end

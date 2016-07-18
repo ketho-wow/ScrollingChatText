@@ -2,17 +2,15 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.07.05					---
---- Version: 1.3 [2016.03.23]			---
+--- Version: 1.6 [2016.07.17]			---
 -------------------------------------------
 --- Curse			http://mods.curse.com/addons/wow/scrollingchattext
 --- WoWInterface	http://www.wowinterface.com/downloads/info20827-ScrollingChatText.html
 
 -- To Do:
 -- # Some kind of filtering against spam
--- # Prevent looping yourself, but still being able to talk in a \Chat\ Channel, different from the output \Chat\ Channel
 
 -- To Fix:
--- # Error: SendChatMessage(): Invalid escape code in chat message; When trying to output more than 255 characters, and there was a Link at the end
 -- # LibSink(?) Links being converted to raw text when outputting to a Channel
 -- # LibSink(?) Links and the remainder of the text being cut out
 -- # LibSink(?) Messages with Links sometimes not even being output to a chat channel
@@ -190,24 +188,6 @@ S.MONSTER_CHAT = {
 	CHAT_MSG_MONSTER_WHISPER = CHAT_MONSTER_WHISPER_GET,
 	CHAT_MSG_RAID_BOSS_WHISPER = CHAT_MONSTER_WHISPER_GET,
 }
-
-	--------------------
-	--- Level Events ---
-	--------------------
-
--- register/unregister events depending on options
-S.levelremap = {
-	LevelParty = "UNIT_LEVEL",
-	LevelRaid = "UNIT_LEVEL",
-	LevelGuild = "GUILD_ROSTER_UPDATE",
-	LevelFriend = "FRIENDLIST_UPDATE",
-	LevelRealID = "BN_FRIEND_INFO_CHANGED",
-}
-
--- determine if any of the LevelGroup options are enabled
-function S.LevelGroup()
-	return profile.LevelParty or profile.LevelRaid
-end
 
 	---------------------
 	--- Color Options ---
@@ -530,6 +510,6 @@ S.clients = { -- also used as remap for SC2/D3 icon
 
 S.CombatTextEnabled = {}
 
-for _, v in ipairs({"MikScrollingBattleText", "Parrot", "sct"}) do
+for _, v in ipairs({"MikScrollingBattleText", "sct"}) do
 	S.CombatTextEnabled[v] = select(4, GetAddOnInfo(v))
 end

@@ -17,7 +17,6 @@ local L = {
 		OPTION_COLOR_MESSAGE = "Ganze Chat-Nachrichten einfärben",
 		OPTION_FILTER_SELF = "Eigene Nachrichten ausfiltern", -- Needs review
 		OPTION_FONT = "Schriftart",
-		OPTION_GROUP_LEVELUP = "Stufenzunahme",
 		OPTION_GROUP_SHOW_WHEN = "Anzeigen, wenn ..",
 		OPTION_ICON_SIZE = "Symbolgröße",
 		OPTION_REPARENT_COMBAT_TEXT = "Kampftext loslösen und ins Weltfenster (WorldFrame) einbetten", -- Needs review
@@ -90,7 +89,6 @@ local L = {
 		GUILD = "길드",
 		OFFICER = "오피서",
 		OPTION_FONT = "글꼴",
-		OPTION_GROUP_LEVELUP = "레벨업",
 		OPTION_ICON_SIZE = "아이콘 크기",
 		PARTY = "파티", PARTY_LEADER = "파티",
 		RAID = "공대",
@@ -105,7 +103,6 @@ local L = {
 	ruRU = {
 	},
 	zhCN = {
-		OPTION_GROUP_LEVELUP = "升级",
 		OPTION_GROUP_SHOW_WHEN = "当...时显示",
 		OPTION_FILTER_SELF = "过滤自身",
 		OPTION_COLOR_MESSAGE = "着色完整消息",
