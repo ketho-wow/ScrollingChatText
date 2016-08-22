@@ -421,7 +421,7 @@ function SCR:CHAT_MSG_BN(event, ...)
 	-- ToDo: add support for multiple toons / BNGetFriendGameAccountInfo
 	local _, toonName, client, _, _, _, _, class = BNGetGameAccountInfo(presenceId)
 	
-	local isPlayer = strfind(toonName, S.playerName) -- participating in Real ID whispers
+	local isPlayer = strfind(toonName or "", S.playerName) -- participating in Real ID whispers
 	if profile.FilterSelf and (isPlayer or S.INFORM[event]) then return end
 	
 	local subevent = event:match("CHAT_MSG_(.+)")
@@ -472,7 +472,7 @@ function SCR:CHAT_MSG_BN(event, ...)
 		
 		self:ChatOutput(profile.Message, args, profile.color[subevent])
 	else
-		args.icon = (profile.IconSize > 1 and not isChat) and "|TInterface\\ChatFrame\\UI-ChatIcon-"..S.clients[client]..":14:14:0:-1|t" or ""
+		args.icon = (profile.IconSize > 1 and not isChat and client) and "|TInterface\\ChatFrame\\UI-ChatIcon-"..S.clients[client]..":14:14:0:-1|t" or ""
 		
 		local chanColor = S.chatCache[subevent]
 		args.chan = "|cff"..chanColor..L[subevent].."|r"
