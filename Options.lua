@@ -724,19 +724,18 @@ do
 	local other = {
 		[1] = { -- COMBAT
 			[1] = "COMBAT_XP_GAIN",
-			[4] = "COMBAT_GUILD_XP_GAIN",
-			[7] = "COMBAT_HONOR_GAIN",
-			[10] = "COMBAT_FACTION_CHANGE",
-			
+			[4] = "COMBAT_HONOR_GAIN",
+			[7] = "COMBAT_FACTION_CHANGE",
+			[10] = "COMBAT_MISC_INFO",
+				
 			[2] = "SKILL",
 			[5] = "LOOT",
 			[8] = "CURRENCY",
 			[11] = "MONEY",
-			
+				
 			[3] = "TRADESKILLS",
 			[6] = "OPENING",
 			[9] = "PET_INFO",
-			[12] = "COMBAT_MISC_INFO",
 		},
 		[2] = { -- PVP
 			"BG_SYSTEM_HORDE",

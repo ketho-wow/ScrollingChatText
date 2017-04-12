@@ -1,19 +1,8 @@
--------------------------------------------
---- Author: Ketho (EU-Boulderfist)		---
---- License: Public Domain				---
---- Created: 2011.07.05					---
---- Version: 1.6 [2016.07.17]			---
--------------------------------------------
---- Curse			http://mods.curse.com/addons/wow/scrollingchattext
---- WoWInterface	http://www.wowinterface.com/downloads/info20827-ScrollingChatText.html
+-- Author: Ketho (EU-Boulderfist)
+-- License: Public Domain
 
 -- To Do:
 -- # Some kind of filtering against spam
-
--- To Fix:
--- # LibSink(?) Links being converted to raw text when outputting to a Channel
--- # LibSink(?) Links and the remainder of the text being cut out
--- # LibSink(?) Messages with Links sometimes not even being output to a chat channel
 
 local NAME, S = ...
 S.VERSION = GetAddOnMetadata(NAME, "Version")
