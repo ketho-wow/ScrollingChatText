@@ -1,5 +1,5 @@
 ## Interface: 70200
-## Version:  @project-version@
+## Version: @project-version@
 ## Title: ScrollingChatText
 ## Notes: Shows Chat as Combat Text
 ## Author: Ketho @ EU-Boulderfist
