@@ -342,15 +342,13 @@ function SCR:CHAT_MSG(event, ...)
 	
 	local msg, sourceName, lang, channelString, destName, flags, _, channelID, channelName, _, lineId, guid = ...
 	if not guid or guid == "" then return end
-	
 	local isChat = S.LibSinkChat[profile.sink20OutputSink]
-	local isPlayer = strfind(sourceName, S.playerName)
+	local isPlayer = (guid == S.playerGUID)
 	if profile.FilterSelf and (isPlayer or S.INFORM[event]) then return end -- filter self
 	if isChat and isPlayer and not profile.FilterSelf then return end -- prevent looping your own chat
-	
 	local subevent = event:match("CHAT_MSG_(.+)")
 	-- options filter
-	if chat[subevent] or (subevent == "CHANNEL" and chat["CHANNEL"..channelID]) then
+	if chat[subevent] or (S.CHANNEL[subevent] and chat["CHANNEL"..channelID]) then
 		
 		local class, race, sex = unpack(S.playerCache[guid])
 		if not class then return end
@@ -362,7 +360,7 @@ function SCR:CHAT_MSG(event, ...)
 		
 		args.icon = (profile.IconSize > 1 and not isChat) and raceIcon..classIcon or ""
 		
-		local chanColor = S.chatCache[(subevent == "CHANNEL") and "CHANNEL"..channelID or subevent]
+		local chanColor = S.chatCache[S.CHANNEL[subevent] and "CHANNEL"..channelID or subevent]
 		args.chan = "|cff"..chanColor..(channelID > 0 and channelID or L[subevent]).."|r"
 		
 		sourceName = profile.TrimRealm and sourceName:match("(.-)%-") or sourceName -- remove realm names
@@ -496,7 +494,7 @@ function SCR:CHAT_MSG_STATIC(event, ...)
 	
 	-- filter own achievs/emotes; avoid spamloop
 	local isChat = S.LibSinkChat[profile.sink20OutputSink]
-	local isPlayer = strfind(sourceName, S.playerName)
+	local isPlayer = (guid == S.playerGUID)
 	if profile.FilterSelf and isPlayer then return end
 	if isChat and isPlayer and not profile.FilterSelf then return end
 	

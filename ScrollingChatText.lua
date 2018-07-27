@@ -23,6 +23,7 @@ local pairs, ipairs = pairs, ipairs
 local format = format
 
 S.playerName = UnitName("player")
+S.playerGUID = UnitGUID("player")
 S.playerClass = select(2, UnitClass("player"))
 
 	--------------
@@ -34,6 +35,7 @@ S.events = {
 		"CHAT_MSG_SAY",
 		"CHAT_MSG_YELL",
 		"CHAT_MSG_CHANNEL",
+		"CHAT_MSG_COMMUNITIES_CHANNEL",
 		"CHAT_MSG_WHISPER",
 		"CHAT_MSG_WHISPER_INFORM", -- self
 		"CHAT_MSG_GUILD",
@@ -78,6 +80,11 @@ S.eventremap = {
 S.INFORM = {
 	CHAT_MSG_WHISPER_INFORM = true,
 	CHAT_MSG_BN_WHISPER_INFORM = true,
+}
+
+S.CHANNEL = {
+	CHANNEL = true,
+	COMMUNITIES_CHANNEL = true,
 }
 
 	--------------------
@@ -351,50 +358,72 @@ end
 	--- Race Icons ---
 	------------------
 
-S.racePath = "Interface\\Glues\\CharacterCreate\\UI-CharacterCreate-Races"
-
-S.RACE_ICON_TCOORDS_256 = { -- GlueXML\CharacterCreate.lua L25 (4.3.4.15595)
-	HUMAN_MALE		= {0, 32, 0, 128},
-	DWARF_MALE		= {32, 64, 0, 128},
-	GNOME_MALE		= {64, 96, 0, 128},
-	NIGHTELF_MALE	= {96, 128, 0, 128},
-
-	TAUREN_MALE		= {0, 32, 128, 256},
-	SCOURGE_MALE	= {32, 64, 128, 256},
-	TROLL_MALE		= {64, 96, 128, 256},
-	ORC_MALE		= {96, 128, 128, 256},
-
-	HUMAN_FEMALE	= {0, 32, 256, 384},  
-	DWARF_FEMALE	= {32, 64, 256, 384},
-	GNOME_FEMALE	= {64, 96, 256, 384},
-	NIGHTELF_FEMALE	= {96, 128, 256, 384},
-
-	TAUREN_FEMALE	= {0, 32, 384, 512},   
-	SCOURGE_FEMALE	= {32, 64, 384, 512}, 
-	TROLL_FEMALE	= {64, 96, 384, 512}, 
-	ORC_FEMALE		= {96, 128, 384, 512}, 
-
-	BLOODELF_MALE	= {128, 160, 128, 256},
-	BLOODELF_FEMALE	= {128, 160, 384, 512}, 
-
-	DRAENEI_MALE	= {128, 160, 0, 128},
-	DRAENEI_FEMALE	= {128, 160, 256, 384}, 
-
-	GOBLIN_MALE		= {160, 192, 128, 256},
-	GOBLIN_FEMALE	= {160, 192, 384, 512},
-
-	WORGEN_MALE		= {160, 192, 0, 128},
-	WORGEN_FEMALE	= {160, 192, 256, 384},
-	
-	PANDAREN_MALE	= {192, 224, 0, 128},
-	PANDAREN_FEMALE	= {192, 224, 256, 384},
-}
-
 S.sexremap = {nil, "MALE", "FEMALE"}
 
+local RACE_ICON_TCOORDS = { -- GlueXML\CharacterCreate.lua 8.0.1
+	["HUMAN_MALE"]		= {0, 0.125, 0, 0.25},
+	["DWARF_MALE"]		= {0.125, 0.25, 0, 0.25},
+	["GNOME_MALE"]		= {0.25, 0.375, 0, 0.25},
+	["NIGHTELF_MALE"]	= {0.375, 0.5, 0, 0.25},
+
+	["TAUREN_MALE"]		= {0, 0.125, 0.25, 0.5},
+	["SCOURGE_MALE"]	= {0.125, 0.25, 0.25, 0.5},
+	["TROLL_MALE"]		= {0.25, 0.375, 0.25, 0.5},
+	["ORC_MALE"]		= {0.375, 0.5, 0.25, 0.5},
+
+	["HUMAN_FEMALE"]	= {0, 0.125, 0.5, 0.75},
+	["DWARF_FEMALE"]	= {0.125, 0.25, 0.5, 0.75},
+	["GNOME_FEMALE"]	= {0.25, 0.375, 0.5, 0.75},
+	["NIGHTELF_FEMALE"]	= {0.375, 0.5, 0.5, 0.75},
+
+	["TAUREN_FEMALE"]	= {0, 0.125, 0.75, 1.0},
+	["SCOURGE_FEMALE"]	= {0.125, 0.25, 0.75, 1.0},
+	["TROLL_FEMALE"]	= {0.25, 0.375, 0.75, 1.0},
+	["ORC_FEMALE"]		= {0.375, 0.5, 0.75, 1.0},
+
+	["BLOODELF_MALE"]	= {0.5, 0.625, 0.25, 0.5},
+	["BLOODELF_FEMALE"]	= {0.5, 0.625, 0.75, 1.0},
+
+	["DRAENEI_MALE"]	= {0.5, 0.625, 0, 0.25},
+	["DRAENEI_FEMALE"]	= {0.5, 0.625, 0.5, 0.75},
+
+	["GOBLIN_MALE"]		= {0.629, 0.750, 0.25, 0.5},
+	["GOBLIN_FEMALE"]	= {0.629, 0.750, 0.75, 1.0},
+
+	["WORGEN_MALE"]		= {0.629, 0.750, 0, 0.25},
+	["WORGEN_FEMALE"]	= {0.629, 0.750, 0.5, 0.75},
+
+	["PANDAREN_MALE"]	= {0.756, 0.881, 0, 0.25},
+	["PANDAREN_FEMALE"]	= {0.756, 0.881, 0.5, 0.75},
+
+	["NIGHTBORNE_MALE"]	= {0.375, 0.5, 0, 0.25},
+	["NIGHTBORNE_FEMALE"]	= {0.375, 0.5, 0.5, 0.75},
+
+	["HIGHMOUNTAINTAUREN_MALE"]		= {0, 0.125, 0.25, 0.5},
+	["HIGHMOUNTAINTAUREN_FEMALE"]	= {0, 0.125, 0.75, 1.0},
+
+	["VOIDELF_MALE"]	= {0.5, 0.625, 0.25, 0.5},
+	["VOIDELF_FEMALE"]	= {0.5, 0.625, 0.75, 1.0},
+
+	["LIGHTFORGEDDRAENEI_MALE"]	= {0.5, 0.625, 0, 0.25},
+	["LIGHTFORGEDDRAENEI_FEMALE"]	= {0.5, 0.625, 0.5, 0.75},
+
+	["DARKIRONDWARF_MALE"]		= {0.125, 0.25, 0, 0.25},
+	["DARKIRONDWARF_FEMALE"]	= {0.125, 0.25, 0.5, 0.75},
+
+	["MAGHARORC_MALE"]			= {0.375, 0.5, 0.25, 0.5},
+	["MAGHARORC_FEMALE"]		= {0.375, 0.5, 0.75, 1.0},
+
+	["ZANDALARITROLL_MALE"]		= {0.25, 0.375, 0.25, 0.5},
+	["ZANDALARITROLL_FEMALE"]	= {0.25, 0.375, 0.75, 1.0},
+}
+
+local racePath = "Interface\\Glues\\CharacterCreate\\UI-CharacterCreate-Races"
+
 S.raceIconCache = setmetatable({}, {__index = function(t, k)
-	local coords = strjoin(":", unpack(S.RACE_ICON_TCOORDS_256[k]))
-	local v = format("|T%s:%s:%s:%%s:%%s:256:512:%s|t", S.racePath, profile.IconSize, profile.IconSize, coords)
+	local left, right, top, bottom = unpack(RACE_ICON_TCOORDS[k])
+	local coords = strjoin(":", left*512, right*512, top*512, bottom*512)
+	local v = format("|T%s:%s:%s:%%s:%%s:256:512:%s|t", racePath, profile.IconSize, profile.IconSize, coords)
 	rawset(t, k, v)
 	return v
 end})
