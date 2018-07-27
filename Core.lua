@@ -60,9 +60,6 @@ function SCR:OnInitialize()
 	self:GetChatTypeInfo()
 	self.db = LibStub("AceDB-3.0"):New("ScrollingChatTextDB", S.defaults, true)
 	
-	self.db.global.version = S.VERSION
-	self.db.global.build = S.BUILD
-	
 	self.db.RegisterCallback(self, "OnProfileChanged", "RefreshDB")
 	self.db.RegisterCallback(self, "OnProfileCopied", "RefreshDB")
 	self.db.RegisterCallback(self, "OnProfileReset", "RefreshDB")
@@ -238,7 +235,8 @@ function SCR:CHANNEL_UI_UPDATE()
 	wipe(channels)
 	local chanList = {GetChannelList()}
 	for i = 1, #chanList, 2 do
-		channels[chanList[i]] = chanList[i+1]
+		local name = chanList[i+1]
+		channels[chanList[i]] = strfind(name, "Community:") and ChatFrame_ResolveChannelName(name) or name
 	end
 	for i = 1, 10 do
 		if channels[i] then

@@ -178,7 +178,7 @@ end
 S.options = {
 	type = "group",
 	childGroups = "tab",
-	name = format("%s |cffADFF2Fv%s|r", NAME, S.VERSION),
+	name = format("%s |cffADFF2F%s|r", NAME, GetAddOnMetadata(NAME, "Version")),
 	args = {
 		main = {
 			type = "group", order = 1,

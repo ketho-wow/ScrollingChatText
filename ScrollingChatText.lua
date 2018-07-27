@@ -5,8 +5,6 @@
 -- # Some kind of filtering against spam
 
 local NAME, S = ...
-S.VERSION = GetAddOnMetadata(NAME, "Version")
-S.BUILD = "Release"
 
 -- ScrollingChatText abbreviates to SCR in order to avoid confusion with SCT (ScrollingCombatText)
 ScrollingChatText = LibStub("AceAddon-3.0"):NewAddon(NAME, "AceEvent-3.0", "AceTimer-3.0", "AceConsole-3.0", "LibSink-2.0")
