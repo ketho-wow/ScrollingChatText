@@ -419,8 +419,8 @@ local RACE_ICON_TCOORDS = { -- GlueXML\CharacterCreate.lua 8.0.1
 local racePath = "Interface\\Glues\\CharacterCreate\\UI-CharacterCreate-Races"
 
 S.raceIconCache = setmetatable({}, {__index = function(t, k)
-	local left, right, top, bottom = unpack(RACE_ICON_TCOORDS[k])
-	local coords = strjoin(":", left*512, right*512, top*512, bottom*512)
+	local top, bottom, left, right = unpack(RACE_ICON_TCOORDS[k])
+	local coords = strjoin(":", top*256, bottom*256, left*512, right*512)
 	local v = format("|T%s:%s:%s:%%s:%%s:256:512:%s|t", racePath, profile.IconSize, profile.IconSize, coords)
 	rawset(t, k, v)
 	return v

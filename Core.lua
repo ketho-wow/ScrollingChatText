@@ -339,56 +339,74 @@ function SCR:CHAT_MSG(event, ...)
 	if not StateFilter() then return end
 	
 	local msg, sourceName, lang, channelString, destName, flags, _, channelID, channelName, _, lineId, guid = ...
-	if not guid or guid == "" then return end
-	local isChat = S.LibSinkChat[profile.sink20OutputSink]
-	local isPlayer = (guid == S.playerGUID)
-	if profile.FilterSelf and (isPlayer or S.INFORM[event]) then return end -- filter self
-	if isChat and isPlayer and not profile.FilterSelf then return end -- prevent looping your own chat
-	local subevent = event:match("CHAT_MSG_(.+)")
-	-- options filter
-	if chat[subevent] or (S.CHANNEL[subevent] and chat["CHANNEL"..channelID]) then
-		
-		local class, race, sex = unpack(S.playerCache[guid])
-		if not class then return end
-		
-		local x1, y1, x2, y2 = 4, 0, 4, 0 -- Legion: something is screwing with the icon positioning in FCT
-		if profile.sink20OutputSink == "Blizzard" then x1, y1, x2, y2 = -14, -8, 0, -8 end
-		local raceIcon = S.GetRaceIcon(strupper(race).."_"..S.sexremap[sex], x1, y1)
-		local classIcon = S.GetClassIcon(class, x2, y2)
-		
-		args.icon = (profile.IconSize > 1 and not isChat) and raceIcon..classIcon or ""
-		
-		local chanColor = S.chatCache[S.CHANNEL[subevent] and "CHANNEL"..channelID or subevent]
-		args.chan = "|cff"..chanColor..(channelID > 0 and channelID or L[subevent]).."|r"
-		
-		sourceName = profile.TrimRealm and sourceName:match("(.-)%-") or sourceName -- remove realm names
-		args.name = "|cff"..S.classCache[class]..sourceName.."|r"
-		
-		-- this should be done before converting to raid target icons
-		if profile.Split then
-			msg = SplitMessage(msg)
-		end
-		
-		-- language; FrameXML\ChatFrame.lua (4.3.4.15595)
-		if #lang > 0 and lang ~= "Universal" and lang ~= S.defaultLang then
-			msg = format("[%s] %s", lang, msg)
-		end
-		
-		if not isChat then
-			-- convert Raid Target icons; FrameXML\ChatFrame.lua L3166 (4.3.4.15595)
-			for c in gmatch(msg, "%b{}") do
-				local rt = strlower(gsub(c, "[{}]", ""))
-				if ICON_TAG_LIST[rt] and ICON_LIST[ICON_TAG_LIST[rt]] then
-					msg = msg:gsub(c, ICON_LIST[ICON_TAG_LIST[rt]].."0|t")
+	if guid then
+		local isChat = S.LibSinkChat[profile.sink20OutputSink]
+		local isPlayer = (guid == S.playerGUID)
+		if profile.FilterSelf and (isPlayer or S.INFORM[event]) then return end -- filter self
+		if isChat and isPlayer and not profile.FilterSelf then return end -- prevent looping your own chat
+		local subevent = event:match("CHAT_MSG_(.+)")
+
+		if chat[subevent] or (S.CHANNEL[subevent] and chat["CHANNEL"..channelID]) then
+			local class, race, sex = unpack(S.playerCache[guid])
+			if not class then return end
+			
+			local x1, y1, x2, y2 = 4, 0, 4, 0 -- Legion: something is screwing with the icon positioning in FCT
+			if profile.sink20OutputSink == "Blizzard" then x1, y1, x2, y2 = -14, -8, 0, -8 end
+			local raceIcon = S.GetRaceIcon(strupper(race).."_"..S.sexremap[sex], x1, y1)
+			local classIcon = S.GetClassIcon(class, x2, y2)
+			
+			args.icon = (profile.IconSize > 1 and not isChat) and raceIcon..classIcon or ""
+			
+			local chanColor = S.chatCache[S.CHANNEL[subevent] and "CHANNEL"..channelID or subevent]
+			args.chan = "|cff"..chanColor..(channelID > 0 and channelID or L[subevent]).."|r"
+			
+			sourceName = profile.TrimRealm and sourceName:match("(.-)%-") or sourceName -- remove realm names
+			args.name = "|cff"..S.classCache[class]..sourceName.."|r"
+			
+			-- this should be done before converting to raid target icons
+			if profile.Split then
+				msg = SplitMessage(msg)
+			end
+			
+			-- language; FrameXML\ChatFrame.lua (4.3.4.15595)
+			if #lang > 0 and lang ~= "Universal" and lang ~= S.defaultLang then
+				msg = format("[%s] %s", lang, msg)
+			end
+			
+			if not isChat then
+				-- convert Raid Target icons; FrameXML\ChatFrame.lua L3166 (4.3.4.15595)
+				for c in gmatch(msg, "%b{}") do
+					local rt = strlower(gsub(c, "[{}]", ""))
+					if ICON_TAG_LIST[rt] and ICON_LIST[ICON_TAG_LIST[rt]] then
+						msg = msg:gsub(c, ICON_LIST[ICON_TAG_LIST[rt]].."0|t")
+					end
 				end
 			end
+			
+			-- try to continue the coloring if broken by hyperlinks; this is kinda ugly I guess
+			msg = msg:gsub("|r", "|r|cff"..chanColor)
+			args.msg = "|cff"..chanColor..msg.."|r"
+			
+			self:ChatOutput(profile.Message, args, profile.color[subevent])
 		end
+	else -- must be a non-wow Communities channel
+		local subevent = event:match("CHAT_MSG_(.+)")
 		
-		-- try to continue the coloring if broken by hyperlinks; this is kinda ugly I guess
-		msg = msg:gsub("|r", "|r|cff"..chanColor)
-		args.msg = "|cff"..chanColor..msg.."|r"
-		
-		self:ChatOutput(profile.Message, args, profile.color[subevent])
+		-- cant filter self, since we dont know which one the player's battletag name is
+		if S.CHANNEL[subevent] and chat["CHANNEL"..channelID] then
+			local chanColor = S.chatCache[S.CHANNEL[subevent] and "CHANNEL"..channelID or subevent]
+			args.chan = "|cff"..chanColor..channelID.."|r"
+			args.name = "|cff71D5FF"..sourceName.."|r"
+			
+			if profile.Split then
+				msg = SplitMessage(msg)
+			end
+			msg = msg:gsub("|r", "|r|cff"..chanColor)
+			args.msg = "|cff"..chanColor..msg.."|r"
+			args.icon = "" -- trim out icon arg
+			
+			self:ChatOutput(profile.Message, args, profile.color[subevent])
+		end
 	end
 end
 
