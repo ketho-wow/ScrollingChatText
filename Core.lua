@@ -388,8 +388,7 @@ function SCR:CHAT_MSG(event, ...)
 			end
 		end
 	else -- must be a non-wow Communities channel
-		isPlayer = (bnSenderID == 1) -- just a guess
-		
+		--isPlayer = (bnSenderID == 1) -- don't know how to guess it
 		if S.CHANNEL[subevent] and chat["CHANNEL"..channelID] then
 			args.chan = "|cff"..chanColor..channelID.."|r"
 			args.name = "|cff71D5FF"..sourceName.."|r"
