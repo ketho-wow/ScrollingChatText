@@ -144,7 +144,7 @@ function SCR:GetChatTypeInfo()
 	end
 	
 	-- global channels
-	for i = 1, 10 do
+	for i = 1, MAX_WOW_CHAT_CHANNELS do
 		local color = ChatTypeInfo["CHANNEL"..i]
 		defaults.profile.color["CHANNEL"..i] = {
 			r = color.r,
@@ -838,7 +838,7 @@ end
 do
 	local chan = options.args.colors.args.inline3.args
 
-	for i = 1, 10 do
+	for i = 1, MAX_WOW_CHAT_CHANNELS do
 		chan["CHANNEL"..i] = {
 			type = "color",
 			order = i,
