@@ -552,7 +552,7 @@ S.options = {
 					func = function()
 						S.Test = not S.Test
 						if S.Test then
-							S.TestTimer = SCR:ScheduleRepeatingTimer(function()
+							S.TestTimer = C_Timer.NewTicker(1, function()
 								-- just output a bunch of randomized characters
 								for i = 1, random(75) do
 									testCache[i] = strchar(random(unpack(testRange[random(3)])))
@@ -560,9 +560,9 @@ S.options = {
 								
 								SCR:Pour("|cffFFFF00Test:|r "..table.concat(testCache))
 								wipe(testCache)
-							end, 1)
+							end)
 						else
-							SCR:CancelTimer(S.TestTimer)
+							S.TestTimer:Cancel()
 						end
 					end,
 				},

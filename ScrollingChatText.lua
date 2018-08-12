@@ -7,7 +7,7 @@
 local NAME, S = ...
 
 -- ScrollingChatText abbreviates to SCR in order to avoid confusion with SCT (ScrollingCombatText)
-ScrollingChatText = LibStub("AceAddon-3.0"):NewAddon(NAME, "AceEvent-3.0", "AceTimer-3.0", "AceConsole-3.0", "LibSink-2.0")
+ScrollingChatText = LibStub("AceAddon-3.0"):NewAddon(NAME, "AceEvent-3.0", "AceConsole-3.0", "LibSink-2.0")
 local SCR = ScrollingChatText
 SCR.S = S -- debug purpose
 

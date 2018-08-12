@@ -98,9 +98,6 @@ function SCR:OnInitialize()
 	options.args.advanced.args.inline1.args.ParentCombatText.desc = format(UI_HIDDEN, GetBindingText(GetBindingKey("TOGGLEUI"), "KEY_"))
 	S.defaultLang = GetDefaultLanguage()
 	
-	-- on login ChatFrame_ResolveChannelName does not yet have the subchannel names
-	C_Timer.After(2, self.CHANNEL_UI_UPDATE)
-	
 	-- Legion: Blizzard_CombatText is disabled by default, but we listed it as a dependency so its enabled
 	-- we still want that output sink, without enabling the option for FCT, but ...
 	
@@ -230,17 +227,18 @@ end
 
 S.channels = {} -- also used for color options
 local chanGroup = options.args.main.args.inline2.args
+local CUU_timer
 
--- There doesn't seem to be an event that shows when CHANNEL_UI_UPDATE has completely finished updating (it fires multiple times in a row)
--- and I don't know a way to throttle it to only the very last call, so this will generate some garbage
-function SCR:CHANNEL_UI_UPDATE()
+local function CHANNEL_UI_UPDATE()
 	local channels = S.channels
 	wipe(channels)
 	local chanList = {GetChannelList()}
+	
 	for i = 1, #chanList, 3 do
 		local name = chanList[i+1]
 		channels[chanList[i]] = strfind(name, "Community:") and ChatFrame_ResolveChannelName(name) or name
 	end
+	
 	for i = 1, MAX_WOW_CHAT_CHANNELS do
 		if channels[i] then
 			chanGroup["CHANNEL"..i] = {
@@ -256,7 +254,16 @@ function SCR:CHANNEL_UI_UPDATE()
 	ACR:NotifyChange("ScrollingChatText_Parent")
 end
 
-function SCR:PLAYER_REGEN(event, ...)
+-- on login ChatFrame_ResolveChannelName does not yet have the subchannel names
+function SCR:CHANNEL_UI_UPDATE()
+	-- throttle, cancel any previous timer
+	if CUU_timer then
+		CUU_timer:Cancel()
+	end
+	CUU_timer = C_Timer.NewTimer(2, CHANNEL_UI_UPDATE)
+end
+
+function SCR:PLAYER_REGEN(event)
 	combatState = (event == "PLAYER_REGEN_DISABLED") and true or false -- "PLAYER_REGEN_ENABLED"
 end
 
@@ -344,20 +351,19 @@ function SCR:CHAT_MSG(event, ...)
 	local msg, sourceName, lang, channelString, destName, flags, _, channelID, channelName, _, lineId, guid, bnSenderID = ...
 	
 	local isChat = S.LibSinkChat[profile.sink20OutputSink]
-	local isPlayer
+	local isPlayer = (guid == S.playerGUID)
+	
+	if profile.FilterSelf and (isPlayer or S.INFORM[event]) then return end -- filter self
+	if isChat and isPlayer and not profile.FilterSelf then return end -- prevent looping your own chat
 	
 	local subevent = event:match("CHAT_MSG_(.+)")
 	local chanColor = S.chatCache[S.CHANNEL[subevent] and "CHANNEL"..channelID or subevent]
 	
-	-- this should be done before converting to raid target icons
-	if profile.Split then
-		msg = SplitMessage(msg)
-	end
-	
-	if guid then
-		isPlayer = (guid == S.playerGUID)
-
-		if chat[subevent] or (S.CHANNEL[subevent] and chat["CHANNEL"..channelID]) then
+	if chat[subevent] or (S.CHANNEL[subevent] and chat["CHANNEL"..channelID]) then
+		-- this should be done before converting to raid target icons
+		msg = profile.Split and SplitMessage(msg) or msg
+		
+		if guid then		
 			local class, race, sex = unpack(S.playerCache[guid])
 			if not class then return end
 			
@@ -386,24 +392,21 @@ function SCR:CHAT_MSG(event, ...)
 					end
 				end
 			end
+		else -- must be a non-wow Communities channel
+			--isPlayer = (bnSenderID == 1) -- don't know how to guess it
+			if S.CHANNEL[subevent] and chat["CHANNEL"..channelID] then
+				args.chan = "|cff"..chanColor..channelID.."|r"
+				args.name = "|cff71D5FF"..sourceName.."|r"
+				args.icon = "" -- trim out icon arg
+			end
 		end
-	else -- must be a non-wow Communities channel
-		--isPlayer = (bnSenderID == 1) -- don't know how to guess it
-		if S.CHANNEL[subevent] and chat["CHANNEL"..channelID] then
-			args.chan = "|cff"..chanColor..channelID.."|r"
-			args.name = "|cff71D5FF"..sourceName.."|r"
-			args.icon = "" -- trim out icon arg
-		end
+		
+		-- try to continue the coloring if broken by hyperlinks; this is kinda ugly I guess
+		msg = msg:gsub("|r", "|r|cff"..chanColor)
+		args.msg = "|cff"..chanColor..msg.."|r"
+		
+		self:ChatOutput(profile.Message, args, profile.color[subevent])
 	end
-	
-	if profile.FilterSelf and (isPlayer or S.INFORM[event]) then return end -- filter self
-	if isChat and isPlayer and not profile.FilterSelf then return end -- prevent looping your own chat
-	
-	-- try to continue the coloring if broken by hyperlinks; this is kinda ugly I guess
-	msg = msg:gsub("|r", "|r|cff"..chanColor)
-	args.msg = "|cff"..chanColor..msg.."|r"
-	
-	self:ChatOutput(profile.Message, args, profile.color[subevent])
 end
 
 local linkColor = {
@@ -452,9 +455,7 @@ function SCR:CHAT_MSG_BN(event, ...)
 		local name = isChat and toonName or realName -- can't SendChatMessage Real ID Names, which is understandable
 		args.name = (class ~= "") and "|cff"..S.classCache[S.revLOCALIZED_CLASS_NAMES[class]]..name.."|r" or "|cff"..chanColor..name.."|r"
 		
-		if profile.Split then
-			msg = SplitMessage(msg)
-		end
+		msg = profile.Split and SplitMessage(msg) or msg
 		
 		if not isChat then
 			for k in gmatch(msg, "%b{}") do
@@ -507,6 +508,7 @@ function SCR:CHAT_MSG_STATIC(event, ...)
 	-- filter own achievs/emotes; avoid spamloop
 	local isChat = S.LibSinkChat[profile.sink20OutputSink]
 	local isPlayer = (guid == S.playerGUID)
+	
 	if profile.FilterSelf and isPlayer then return end
 	if isChat and isPlayer and not profile.FilterSelf then return end
 	
@@ -567,13 +569,6 @@ function SCR:CHAT_MSG_OTHER(event, ...)
 	elseif S.MONSTER_CHAT[event] then
 		msg = S.MONSTER_CHAT[event]:format(sourceName)..msg
 	end
-	
-	-- To Do: SplitMessage is not yet tuned for static messages
-	--[[
-	if profile.Split then
-		msg = SplitMessage(msg)
-	end
-	]]
 	
 	local color = profile.color[S.EventToColor[event]]
 	
