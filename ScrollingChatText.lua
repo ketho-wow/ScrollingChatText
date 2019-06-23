@@ -358,7 +358,7 @@ end
 
 S.sexremap = {nil, "MALE", "FEMALE"}
 
-local RACE_ICON_TCOORDS = { -- GlueXML\CharacterCreate.lua 8.0.1
+local RACE_ICON_TCOORDS = { -- GlueXML\CharacterCreate.lua 8.2.0
 	["HUMAN_MALE"]		= {0, 0.125, 0, 0.25},
 	["DWARF_MALE"]		= {0.125, 0.25, 0, 0.25},
 	["GNOME_MALE"]		= {0.25, 0.375, 0, 0.25},
@@ -412,8 +412,11 @@ local RACE_ICON_TCOORDS = { -- GlueXML\CharacterCreate.lua 8.0.1
 	["MAGHARORC_MALE"]			= {0.375, 0.5, 0.25, 0.5},
 	["MAGHARORC_FEMALE"]		= {0.375, 0.5, 0.75, 1.0},
 
-	["ZANDALARITROLL_MALE"]		= {0.25, 0.375, 0.25, 0.5},
-	["ZANDALARITROLL_FEMALE"]	= {0.25, 0.375, 0.75, 1.0},
+	["ZANDALARITROLL_MALE"]		= {0.25, 0.375, 0, 0.25},
+	["ZANDALARITROLL_FEMALE"]	= {0.25, 0.375, 0.5, 0.75},
+
+	["KULTIRAN_MALE"]		= {0, 0.125, 0, 0.25},
+	["KULTIRAN_FEMALE"]		= {0, 0.125, 0.5, 0.75},
 }
 
 local racePath = "Interface\\Glues\\CharacterCreate\\UI-CharacterCreate-Races"
