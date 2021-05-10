@@ -56,54 +56,54 @@ function SCR:OnInitialize()
 		f:SetScript("OnUpdate", f.WaitInitialize)
 		return
 	end
-	
+
 	self:GetChatTypeInfo()
 	self.db = LibStub("AceDB-3.0"):New("ScrollingChatTextDB", S.defaults, true)
-	
+
 	self.db.RegisterCallback(self, "OnProfileChanged", "RefreshDB")
 	self.db.RegisterCallback(self, "OnProfileCopied", "RefreshDB")
 	self.db.RegisterCallback(self, "OnProfileReset", "RefreshDB")
 	self:RefreshDB()
-	
+
 	ACR:RegisterOptionsTable("ScrollingChatText_Parent", options)
 	ACD:AddToBlizOptions("ScrollingChatText_Parent", NAME)
 	ACD:SetDefaultSize("ScrollingChatText_Parent", 700, 585)
-	
+
 	-- setup profiles now, self reminder: requires db to be already defined
 	options.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
 	local profiles = options.args.profiles
 	profiles.order = 5
 	tinsert(appKey, "ScrollingChatText_Profiles")
 	appValue.ScrollingChatText_Profiles = profiles
-	
+
 	for _, v in ipairs(appKey) do
 		ACR:RegisterOptionsTable(v, appValue[v])
 		ACD:AddToBlizOptions(v, appValue[v].name, NAME)
 	end
-	
+
 	----------------------
 	--- Slash Commands ---
 	----------------------
-	
+
 	for _, v in ipairs({"scr", "scrollchat", "scrollingchat", "scrollingchattext"}) do
 		self:RegisterChatCommand(v, "SlashCommand")
 	end
-	
+
 	-- ScrollingCombatText not enabled
 	if not S.CombatTextEnabled.sct then
 		self:RegisterChatCommand("sct", "SlashCommand")
 	end
-	
+
 	-- info not yet available (but we're delayed anyway)
 	options.args.advanced.args.inline1.args.ParentCombatText.desc = format(UI_HIDDEN, GetBindingText(GetBindingKey("TOGGLEUI"), "KEY_"))
 	S.defaultLang = GetDefaultLanguage()
-	
+
 	-- Legion: Blizzard_CombatText is disabled by default, but we listed it as a dependency so its enabled
 	-- we still want that output sink, without enabling the option for FCT, but ...
-	
+
 	-- CombatText_AddMessage() actually works, but LibSink checks for (SHOW_COMBAT_TEXT = "1")
 	-- and we use LibSink. So the only way to use that output is to also enable Blizzard FCT. will work around it
-	
+
 	self:OnEnable() -- delayed OnInitialize done, call OnEnable again now
 end
 
@@ -111,23 +111,23 @@ local combatState
 
 function SCR:OnEnable()
 	if not profile then return end -- Initialization not yet done
-	
+
 	-- Chat events
 	for method, tbl in pairs(S.events) do
 		for _, event in ipairs(tbl) do
 			self:RegisterEvent(event, method)
 		end
 	end
-	
+
 	-- Channel event
 	self:RegisterEvent("CHANNEL_UI_UPDATE")
 	self:CHANNEL_UI_UPDATE() -- addon was disabled; or user did a /reload
-	
+
 	-- support [Class Colors] by Phanx
 	if CUSTOM_CLASS_COLORS then
 		CUSTOM_CLASS_COLORS:RegisterCallback("WipeCache", self)
 	end
-	
+
 	-- init combat state
 	combatState = UnitAffectingCombat("player")
 end
@@ -136,7 +136,7 @@ function SCR:OnDisable()
 	-- maybe superfluous
 	self:UnregisterAllEvents()
 	self:CancelAllTimers()
-	
+
 	if CUSTOM_CLASS_COLORS then
 		CUSTOM_CLASS_COLORS:UnregisterCallback("WipeCache", self)
 	end
@@ -148,12 +148,12 @@ function SCR:RefreshDB()
 	other = profile.other
 	filter = profile.filter
 	self:SetSinkStorage(profile) -- LibSink savedvars
-	
+
 	-- update table references in other files
 	for i = 1, 2 do
 		self["RefreshDB"..i](self)
 	end
-	
+
 	-- Other events; (un)register according to options; also account for profile reset
 	for k, v in pairs(S.OtherEvents) do
 		local reg = other[k] and "RegisterEvent" or "UnregisterEvent"
@@ -165,7 +165,7 @@ function SCR:RefreshDB()
 			self[reg](self, v, "CHAT_MSG_OTHER")
 		end
 	end
-	
+
 	-- init/update Blizzard FCT settings
 	for k, v in pairs(profile.fct) do
 		if type(v) == "table" then -- COMBAT_TEXT_LOCATIONS
@@ -180,9 +180,9 @@ function SCR:RefreshDB()
 			end
 		end
 	end
-	
+
 	self:WipeCache() -- renew color caches
-	
+
 	-- parent CombatText to WorldFrame so you can still see it while the UI is hidden
 	if profile.ParentCombatText and CombatText then
 		CombatText:SetParent(WorldFrame)
@@ -233,12 +233,12 @@ local function CHANNEL_UI_UPDATE()
 	local channels = S.channels
 	wipe(channels)
 	local chanList = {GetChannelList()}
-	
+
 	for i = 1, #chanList, 3 do
 		local name = chanList[i+1]
 		channels[chanList[i]] = strfind(name, "Community:") and ChatFrame_ResolveChannelName(name) or name
 	end
-	
+
 	for i = 1, MAX_WOW_CHAT_CHANNELS do
 		if channels[i] then
 			chanGroup["CHANNEL"..i] = {
@@ -250,7 +250,7 @@ local function CHANNEL_UI_UPDATE()
 			chanGroup["CHANNEL"..i] = nil
 		end
 	end
-	
+
 	ACR:NotifyChange("ScrollingChatText_Parent")
 end
 
@@ -273,17 +273,17 @@ local function StateFilter()
 	local t = time() -- throttle
 	if t > (delayState or 0) then
 		delayState = t + 1
-		
+
 		local combat = filter.Combat and combatState
 		local nocombat = filter.NoCombat and not combatState
-		
+
 		local isGroup = IsInGroup()
 		local group = filter.Group and isGroup
 		local solo = filter.Solo and not isGroup
-		
+
 		lastState = (combat or nocombat) and (group or solo)
 	end
-	
+
 	return lastState
 end
 
@@ -294,11 +294,11 @@ local space, indexed = {}, {}
 local function SplitMessage(msg)
 	-- rawify hyperlinks
 	local msglen = utf8len(gsub(msg, "|c.-(%[.-%]).-|r", "%1"))
-	
+
 	if msglen > 75 then
-		
+
 		wipe(space)
-		
+
 		-- find space positions/repetitions
 		local pos1, pos2 = strfind(msg, "%s+")
 		while pos2 do
@@ -306,14 +306,14 @@ local function SplitMessage(msg)
 			space[pos2] = true
 			pos1, pos2 = strfind(msg, "%s+", pos2 + 1)
 		end
-		
+
 		-- indexed table
 		wipe(indexed)
 		for k in pairs(space) do
 			tinsert(indexed, k)
 		end
 		sort(indexed)
-		
+
 		-- determine positions to divide at
 		local first, second
 		if msglen > 160 then
@@ -323,7 +323,7 @@ local function SplitMessage(msg)
 		else
 			first = (msglen / 2) - 10
 		end
-		
+
 		-- divide at possibly the closest positions
 		for _, v in ipairs(indexed) do
 			if first and v > first then
@@ -347,42 +347,42 @@ local ICON_TAG_LIST = ICON_TAG_LIST
 
 function SCR:CHAT_MSG(event, ...)
 	if not StateFilter() then return end
-	
+
 	local msg, sourceName, lang, channelString, destName, flags, _, channelID, channelName, _, lineId, guid, bnSenderID = ...
-	
+
 	local isChat = S.LibSinkChat[profile.sink20OutputSink]
 	local isPlayer = (guid == S.playerGUID)
-	
+
 	if profile.FilterSelf and (isPlayer or S.INFORM[event]) then return end -- filter self
 	if isChat and isPlayer and not profile.FilterSelf then return end -- prevent looping your own chat
-	
+
 	local subevent = event:match("CHAT_MSG_(.+)")
 	local chanColor = S.chatCache[S.CHANNEL[subevent] and "CHANNEL"..channelID or subevent]
-	
+
 	if chat[subevent] or (S.CHANNEL[subevent] and chat["CHANNEL"..channelID]) then
 		-- this should be done before converting to raid target icons
 		msg = profile.Split and SplitMessage(msg) or msg
-		
-		if guid then		
+
+		if guid then
 			local class, race, sex = unpack(S.playerCache[guid])
 			if not class then return end
-			
+
 			local x1, y1, x2, y2 = 4, 0, 4, 0 -- Legion: something is screwing with the icon positioning in FCT
 			if profile.sink20OutputSink == "Blizzard" then x1, y1, x2, y2 = -14, -8, 0, -8 end
 			local raceIcon = S.GetRaceIcon(race, sex, x1, y1)
 			local classIcon = S.GetClassIcon(class, x2, y2)
-			
+
 			args.icon = (profile.IconSize > 1 and not isChat) and raceIcon..classIcon or ""
 			args.chan = "|cff"..chanColor..(channelID > 0 and channelID or L[subevent]).."|r"
-			
+
 			sourceName = profile.TrimRealm and sourceName:match("(.-)%-") or sourceName -- remove realm names
 			args.name = "|cff"..S.classCache[class]..sourceName.."|r"
-			
+
 			-- language; FrameXML\ChatFrame.lua (4.3.4.15595)
 			if #lang > 0 and lang ~= "Universal" and lang ~= S.defaultLang then
 				msg = format("[%s] %s", lang, msg)
 			end
-			
+
 			if not isChat then
 				-- convert Raid Target icons; FrameXML\ChatFrame.lua L3166 (4.3.4.15595)
 				for c in gmatch(msg, "%b{}") do
@@ -400,11 +400,11 @@ function SCR:CHAT_MSG(event, ...)
 				args.icon = "" -- trim out icon arg
 			end
 		end
-		
+
 		-- try to continue the coloring if broken by hyperlinks; this is kinda ugly I guess
 		msg = msg:gsub("|r", "|r|cff"..chanColor)
 		args.msg = "|cff"..chanColor..msg.."|r"
-		
+
 		self:ChatOutput(profile.Message, args, profile.color[subevent])
 	end
 end
@@ -431,31 +431,31 @@ function SCR:CHAT_MSG_BN(event, ...)
 	local msg, realName, _, _, _, _, _, _, _, _, _, _, bnSenderID = ...
 	local info = C_BattleNet.GetAccountInfoByID(bnSenderID)
 	local accInfo = info.gameAccountInfo
-	
+
 	local isPlayer = strfind(accInfo.characterName or "", S.playerName) -- participating in Real ID whispers
 	if profile.FilterSelf and (isPlayer or S.INFORM[event]) then return end
-	
+
 	local subevent = event:match("CHAT_MSG_(.+)")
 	local isChat = S.LibSinkChat[profile.sink20OutputSink]
-	
+
 	if not chat[subevent] then return end
-	
-	if accInfo.clientProgram == BNET_CLIENT_WOW then	
+
+	if accInfo.clientProgram == BNET_CLIENT_WOW then
 		-- you can chat with a friend from a friend, through Real ID whispers
 		-- but only the toon name, and not the class/race/level/realm would be available
 		local classIcon = accInfo.className and S.GetClassIcon(S.revLOCALIZED_CLASS_NAMES[accInfo.className], -6, -10) or ""
 		args.icon = (profile.IconSize > 1 and not isChat) and classIcon or ""
 		-- can't add add race icons since the return values are localized and need to know the sex
-		
+
 		local chanColor = S.chatCache[subevent]
 		args.chan = "|cff"..chanColor..L[subevent].."|r"
-		
+
 		local name = isChat and accInfo.characterName or realName -- can't SendChatMessage Real ID Names, which is understandable
 		local classColor = S.classCache[S.revLOCALIZED_CLASS_NAMES[accInfo.className]]
 		args.name = (accInfo.className ~= "") and "|cff"..classColor..name.."|r" or "|cff"..chanColor..name.."|r"
-		
+
 		msg = profile.Split and SplitMessage(msg) or msg
-		
+
 		if not isChat then
 			for k in gmatch(msg, "%b{}") do
 				local rt = strlower(gsub(k, "[{}]", ""))
@@ -464,7 +464,7 @@ function SCR:CHAT_MSG_BN(event, ...)
 				end
 			end
 		end
-		
+
 		wipe(gsubtrack)
 		-- color hyperlinks; coloring is omitted in Real ID chat
 		for k in string.gmatch(msg, "|H.-|h.-|h") do
@@ -477,47 +477,47 @@ function SCR:CHAT_MSG_BN(event, ...)
 				gsubtrack[linkColor[linkType]] = true -- substituted all instances of the linkType
 			end
 		end
-		
+
 		args.msg = "|cff"..chanColor..msg.."|r"
-		
+
 		self:ChatOutput(profile.Message, args, profile.color[subevent])
 	else
 		args.icon = (profile.IconSize > 1 and not isChat and accInfo.clientProgram)
 			and "|TInterface\\ChatFrame\\UI-ChatIcon-"..S.clients[accInfo.clientProgram]..":14:14:0:-1|t" or ""
-		
+
 		local chanColor = S.chatCache[subevent]
 		args.chan = "|cff"..chanColor..L[subevent].."|r"
-		
+
 		local name = isChat and accInfo.characterName or realName
 		args.name = "|cff"..chanColor..name.."|r"
-		
+
 		args.msg = "|cff"..chanColor..msg.."|r"
-		
+
 		self:ChatOutput(profile.Message, args, profile.color[subevent])
 	end
 end
 
 function SCR:CHAT_MSG_STATIC(event, ...)
 	if not StateFilter() then return end
-	
+
 	local msg, sourceName, _, _, destName, _, _, _, _, _, _, guid = ...
 	if not guid or guid == "" then return end
 	local class, race, sex = unpack(S.playerCache[guid])
 	if not class then return end
-	
+
 	-- filter own achievs/emotes; avoid spamloop
 	local isChat = S.LibSinkChat[profile.sink20OutputSink]
 	local isPlayer = (guid == S.playerGUID)
-	
+
 	if profile.FilterSelf and isPlayer then return end
 	if isChat and isPlayer and not profile.FilterSelf then return end
-	
-	local subevent = event:match("CHAT_MSG_(.+)")	
+
+	local subevent = event:match("CHAT_MSG_(.+)")
 	if not chat[subevent] then return end
-	
+
 	local color = profile.color[subevent]
 	sourceName = profile.TrimRealm and sourceName:match("(.-)%-") or sourceName -- remove realm names
-	
+
 	if subevent == "EMOTE" then
 		msg = "|cff"..S.classCache[class]..sourceName.."|r "..msg
 	elseif subevent == "TEXT_EMOTE" then
@@ -525,16 +525,16 @@ function SCR:CHAT_MSG_STATIC(event, ...)
 	else
 		msg = msg:format("|cffFFFFFF[|r|cff"..S.classCache[class]..sourceName.."|r|cffFFFFFF]|r")
 	end
-	
+
 	self:Output(msg, color)
 end
 
 -- events are (un)registered according to options, no need for filtering
 function SCR:CHAT_MSG_OTHER(event, ...)
 	if not StateFilter() then return end
-	
+
 	local msg, sourceName, _, fullChannel, _, _, _, chanID, chanName, _, _, guid = ...
-	
+
 	local subEvents = S.OtherSubEvents[event]
 	if subEvents then
 		if type(subEvents) == "table" then
@@ -562,16 +562,16 @@ function SCR:CHAT_MSG_OTHER(event, ...)
 			end
 		end
 	end
-	
+
 	-- creature/boss
 	if S.MONSTER_EMOTE[event] then
 		msg = msg:format(sourceName)
 	elseif S.MONSTER_CHAT[event] then
 		msg = S.MONSTER_CHAT[event]:format(sourceName)..msg
 	end
-	
+
 	local color = profile.color[S.EventToColor[event]]
-	
+
 	self:Output(msg, color)
 end
 
@@ -579,12 +579,12 @@ function SCR:ReplaceArgs(msg, args)
 	for k in gmatch(msg, "%b<>") do
 		-- remove <>, make case insensitive
 		local s = strlower(gsub(k, "[<>]", ""))
-		
+
 		-- escape special characters
 		-- a maybe better alternative to %p is "[%%%.%-%+%?%*%^%$%(%)%[%]%{%}]"
 		s = gsub(args[s] or s, "(%p)", "%%%1")
 		k = gsub(k, "(%p)", "%%%1")
-		
+
 		msg = msg:gsub(k, s)
 	end
 	return msg
@@ -595,9 +595,9 @@ local nokey = {r=1, g=1, b=1}
 function SCR:ChatOutput(msg, args, color)
 	args.time = S.GetTimestamp()
 	msg = self:ReplaceArgs(msg, args)
-	
+
 	color = profile.ColorMessage and color or nokey
-	
+
 	self:Output(msg, color)
 end
 

@@ -49,13 +49,13 @@ local L = {
 		OPTION_SHOW_NOTINCOMBAT = "Not in "..COMBAT,
 		OPTION_ICON_SIZE = "Icon Size",
 		OPTION_FONT = "Font",
-		
+
 		OPTION_FCT_SCROLLSPEED = "Scroll speed",
 		OPTION_FCT_FADEOUT_TIME = "Fade out time",
 		OPTION_FCT_POSITION = "Position",
 		OPTION_FCT_SCALE = "Scale",
 		OPTION_FCT_END = "End",
-		
+
 		BROKER_CLICK = "|cffFFFFFFClick|r to open the options menu",
 		BROKER_SHIFT_CLICK = "|cffFFFFFFShift-click|r to toggle this AddOn",
 		HELLO_WORLD = "Hello World!",

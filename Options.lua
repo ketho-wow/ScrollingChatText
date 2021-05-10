@@ -61,50 +61,50 @@ S.defaults = {
 		chat = {
 			SAY = true,
 			YELL = true,
-			
+
 			EMOTE = true,
 			TEXT_EMOTE = true,
-			
+
 			CHANNEL1 = true, -- default General channel
 			CHANNEL2 = true, -- default Trade channel
-			
+
 			WHISPER = true,
 			WHISPER_INFORM = true, -- self
 			BN_WHISPER = true,
 			BN_WHISPER_INFORM = true, -- self
-			
+
 			GUILD = true,
 			OFFICER = true,
-			
+
 			PARTY = true,
 			PARTY_LEADER = true,
-			
+
 			RAID = true,
 			RAID_LEADER = true,
-			
+
 			INSTANCE_CHAT = true,
 			INSTANCE_CHAT_LEADER = true,
 		},
 		other = {},
-		
+
 		sink20OutputSink = "Blizzard",
 		Message = "<ICON> [<TIME>] [<CHAN>] [<NAME>]: <MSG>",
-		
+
 		FilterSelf = true,
 		TrimRealm = true,
 		Split = true,
-		
+
 		filter = {
 			Combat = true,
 			NoCombat = true,
-			
+
 			Solo = true,
 			Group = true,
 		},
-		
+
 		Timestamp = 6, -- 15:27
 		IconSize = 16,
-		
+
 		fct = {
 			COMBAT_TEXT_SCALE = CombatText:GetScale(), -- can also just assign 1 maybe lol
 			COMBAT_TEXT_SCROLLSPEED = COMBAT_TEXT_SCROLLSPEED,
@@ -142,7 +142,7 @@ function SCR:GetChatTypeInfo()
 			defaults.profile.color[S.colorremap[v]] = defaults.profile.color[v]
 		end
 	end
-	
+
 	-- global channels
 	for i = 1, MAX_WOW_CHAT_CHANNELS do
 		local color = ChatTypeInfo["CHANNEL"..i]
@@ -152,10 +152,10 @@ function SCR:GetChatTypeInfo()
 			b = color.b,
 		}
 	end
-	
+
 	for _, v in ipairs(S.ColorOtherOptions) do
 		v = (v == "ERRORS") and "FILTERED" or v -- dirty hack
-		
+
 		local color = ChatTypeInfo[v]
 		defaults.profile.color[v] = {
 			r = color.r,
@@ -230,13 +230,13 @@ S.options = {
 						local classIcon = S.GetClassIcon(classFile, -2, 3)
 						args.icon = (profile.IconSize > 1) and raceIcon..classIcon or ""
 						args.time = S.GetTimestamp()
-						
+
 						local chatType = ChatEdit_GetLastActiveWindow():GetAttribute("chatType")
 						local channelTarget = ChatEdit_GetLastActiveWindow():GetAttribute("channelTarget")
 						if not profile.color[chatType] then return "   |cffFF0000"..ERROR_CAPS.."|r: "..chatType end -- Error: RAID_WARNING, ...
 						local chanColor = S.chatCache[chatType]
 						args.chan = "|cff"..chanColor..(chatType == "CHANNEL" and channelTarget or L[chatType]).."|r"
-						
+
 						args.name = "|cff"..S.classCache[S.playerClass]..S.playerName.."|r"
 						args.msg = "|cff"..chanColor..L.HELLO_WORLD.."|r"
 						return "  "..SCR:ReplaceArgs(profile.Message, args)
@@ -380,7 +380,7 @@ S.options = {
 					inline = true,
 					set = "SetValueColorChat",
 					args = {
-						TIMESTAMP = { 
+						TIMESTAMP = {
 							type = "color", order = -1,
 							name =  TIMESTAMPS_LABEL,
 						}
@@ -560,7 +560,7 @@ S.options = {
 								for i = 1, random(75) do
 									testCache[i] = strchar(random(unpack(testRange[random(3)])))
 								end
-								
+
 								SCR:Pour("|cffFFFF00Test:|r "..table.concat(testCache))
 								wipe(testCache)
 							end)
@@ -617,11 +617,11 @@ end
 
 function SCR:SetValueOther(i, v)
 	other[i[#i]] = v
-	
+
 	-- (un)register according to options
 	local event = S.OtherEvents[i[#i]]
 	local reg = v and "RegisterEvent" or "UnregisterEvent"
-	
+
 	if type(event) == "table" then
 		for _, subevent in pairs(event) do
 			self[reg](self, subevent, "CHAT_MSG_OTHER")
@@ -641,10 +641,10 @@ function SCR:SetValueColor(i, r, g, b)
 	c.r = r
 	c.g = g
 	c.b = b
-	
+
 	local group = S.colorremap[i[#i]]
 	if not group then return end
-	
+
 	if type(group) == "table" then -- special reverse case: ERRORS
 		for _, v in ipairs(group) do
 			profile.color[v] = c
@@ -678,19 +678,19 @@ do
 		[4] = "YELL",
 		[7] = "EMOTE",
 		[10] = "ACHIEVEMENT",
-		
+
 		[2] = "GUILD",
 		[5] = "OFFICER",
 		[8] = "WHISPER",
 		[11] = "BN_WHISPER",
-		
+
 		[3] = "PARTY",
 		[6] = "RAID",
 		[9] = "INSTANCE_CHAT",
 	}
-	
+
 	local chatGroup = options.args.main.args.inline1.args
-	
+
 	for i, v in ipairs(chat) do
 		local v2 = (v == "ACHIEVEMENT") and "ACHIEVEMENTS" or v -- exception
 		chatGroup[v] = {
@@ -710,10 +710,10 @@ do
 	local LibSink = options.args.main.args.LibSink
 	LibSink.inline = true
 	LibSink.order = 4
-	
+
 	-- use "Blizzard FCT" translation for option
 	options.args.fct.name = LibSink.args.Blizzard.name
-	
+
 	-- dont let libsink hide the Blizzard FCT option
 	LibSink.args.Blizzard.hidden = nil
 end
@@ -730,12 +730,12 @@ do
 			[4] = "COMBAT_HONOR_GAIN",
 			[7] = "COMBAT_FACTION_CHANGE",
 			[10] = "SKILL",
-			
+
 			[2] = "LOOT",
 			[5] = "CURRENCY",
 			[8] = "MONEY",
 			[11] = "TRADESKILLS",
-			
+
 			[3] = "OPENING",
 			[6] = "PET_INFO",
 			[9] = "COMBAT_MISC_INFO",
@@ -749,30 +749,30 @@ do
 			[1] = "SYSTEM",
 			[4] = "ERRORS", -- special: "FILTERED", "RESTRICTED"
 			[7] = "IGNORED",
-			
+
 			[2] = "CHANNEL",
 			[5] = "TARGETICONS",
 			[8] = "BN_INLINE_TOAST_ALERT",
-			
+
 			[3] = "PET_BATTLE_COMBAT_LOG",
 			[6] = "PET_BATTLE_INFO",
 		},
 		[4] = { -- CREATURE_MESSAGES
 			[1] = "MONSTER_SAY",
 			[4] = "MONSTER_EMOTE",
-			
+
 			[2] = "MONSTER_YELL",
 			[5] = "MONSTER_WHISPER",
-			
+
 			[3] = "RAID_BOSS_EMOTE",
 			[6] = "RAID_BOSS_WHISPER",
-			
+
 		},
 	}
-	
+
 	for i1, v1 in ipairs(otherChat) do
 		local group = options.args.main.args["inline"..i1+2].args
-		
+
 		for i2, v2 in ipairs(v1) do
 			group[v2] = {
 				type = "toggle", order = i2,
@@ -791,7 +791,7 @@ end
 
 do
 	local iconSize = options.args.advanced.args.IconSize.values
-	
+
 	for i = 8, 32, 2 do
 		iconSize[i] = i
 	end
@@ -804,7 +804,7 @@ end
 
 do
 	local class = options.args.colors.args.inline1.args
-	
+
 	if CUSTOM_CLASS_COLORS then
 		class.notification = {
 			type = "description",
@@ -823,12 +823,12 @@ end
 
 do
 	local chat = options.args.colors.args.inline2.args
-	
+
 	local chatremap = {
 		CHAT_MSG_CHANNEL = CHANNEL, -- no globalstring
 		CHAT_MSG_WHISPER = WHISPER, -- not preferable globalstring
 	}
-	
+
 	for i, v in ipairs(S.ColorOptions) do
 		chat[v] = {
 			type = "color",
@@ -857,7 +857,7 @@ end
 
 do
 	local other = options.args.colors.args.inline4.args
-	
+
 	for i, v in ipairs(S.ColorOtherOptions) do
 		other[v] = {
 			type = "color",
