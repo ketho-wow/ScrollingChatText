@@ -223,8 +223,11 @@ S.options = {
 					type = "description", order = 6,
 					fontSize = "large",
 					name = function()
-						local raceIcon = S.GetRaceIcon(strupper(select(2, UnitRace("player"))).."_"..S.sexremap[UnitSex("player")], 1, 3)
-						local classIcon = S.GetClassIcon(select(2, UnitClass("player")), 2, 3)
+						local raceFile = select(2, UnitRace("player"))
+						local sex = UnitSex("player")
+						local raceIcon = S.GetRaceIcon(raceFile, sex, 2, 3)
+						local classFile = select(2, UnitClass("player"))
+						local classIcon = S.GetClassIcon(classFile, -2, 3)
 						args.icon = (profile.IconSize > 1) and raceIcon..classIcon or ""
 						args.time = S.GetTimestamp()
 						
@@ -639,15 +642,15 @@ function SCR:SetValueColor(i, r, g, b)
 	c.g = g
 	c.b = b
 	
-	local r = S.colorremap[i[#i]]
-	if not r then return end
+	local group = S.colorremap[i[#i]]
+	if not group then return end
 	
-	if type(r) == "table" then -- special reverse case: ERRORS
-		for _, v in ipairs(r) do
+	if type(group) == "table" then -- special reverse case: ERRORS
+		for _, v in ipairs(group) do
 			profile.color[v] = c
 		end
 	else
-		profile.color[r] = c
+		profile.color[group] = c
 	end
 end
 
@@ -721,7 +724,7 @@ end
 
 do
 	-- kinda same table, different key grouping
-	local other = {
+	local otherChat = {
 		[1] = { -- COMBAT
 			[1] = "COMBAT_XP_GAIN",
 			[4] = "COMBAT_HONOR_GAIN",
@@ -767,13 +770,13 @@ do
 		},
 	}
 	
-	for i1, v1 in ipairs(other) do
+	for i1, v1 in ipairs(otherChat) do
 		local group = options.args.main.args["inline"..i1+2].args
 		
 		for i2, v2 in ipairs(v1) do
 			group[v2] = {
 				type = "toggle", order = i2,
-				width = width, descStyle = "",
+				width = "normal", descStyle = "",
 				name = function() return format("|cff%s%s|r", S.chatCache[v2], S.otherremap[v2] or _G[v2] or v2) end,
 				get = "GetValueOther",
 				set = "SetValueOther",

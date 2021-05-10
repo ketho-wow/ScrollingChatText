@@ -1,9 +1,3 @@
--- Author: Ketho (EU-Boulderfist)
--- License: Public Domain
-
--- To Do:
--- # Some kind of filtering against spam
-
 local NAME, S = ...
 
 -- ScrollingChatText abbreviates to SCR in order to avoid confusion with SCT (ScrollingCombatText)
@@ -352,111 +346,22 @@ function SCR:WipeCache()
 	wipe(S.chatCache)
 end
 
-	------------------
-	--- Race Icons ---
-	------------------
+	-------------
+	--- Icons ---
+	-------------
 
-S.sexremap = {nil, "MALE", "FEMALE"}
+S.sexName = {nil, "male", "female"}
 
-local RACE_ICON_TCOORDS = { -- GlueXML\CharacterCreate.lua 8.2.0
-	["HUMAN_MALE"]		= {0, 0.125, 0, 0.25},
-	["DWARF_MALE"]		= {0.125, 0.25, 0, 0.25},
-	["GNOME_MALE"]		= {0.25, 0.375, 0, 0.25},
-	["NIGHTELF_MALE"]	= {0.375, 0.5, 0, 0.25},
-
-	["TAUREN_MALE"]		= {0, 0.125, 0.25, 0.5},
-	["SCOURGE_MALE"]	= {0.125, 0.25, 0.25, 0.5},
-	["TROLL_MALE"]		= {0.25, 0.375, 0.25, 0.5},
-	["ORC_MALE"]		= {0.375, 0.5, 0.25, 0.5},
-
-	["HUMAN_FEMALE"]	= {0, 0.125, 0.5, 0.75},
-	["DWARF_FEMALE"]	= {0.125, 0.25, 0.5, 0.75},
-	["GNOME_FEMALE"]	= {0.25, 0.375, 0.5, 0.75},
-	["NIGHTELF_FEMALE"]	= {0.375, 0.5, 0.5, 0.75},
-
-	["TAUREN_FEMALE"]	= {0, 0.125, 0.75, 1.0},
-	["SCOURGE_FEMALE"]	= {0.125, 0.25, 0.75, 1.0},
-	["TROLL_FEMALE"]	= {0.25, 0.375, 0.75, 1.0},
-	["ORC_FEMALE"]		= {0.375, 0.5, 0.75, 1.0},
-
-	["BLOODELF_MALE"]	= {0.5, 0.625, 0.25, 0.5},
-	["BLOODELF_FEMALE"]	= {0.5, 0.625, 0.75, 1.0},
-
-	["DRAENEI_MALE"]	= {0.5, 0.625, 0, 0.25},
-	["DRAENEI_FEMALE"]	= {0.5, 0.625, 0.5, 0.75},
-
-	["GOBLIN_MALE"]		= {0.629, 0.750, 0.25, 0.5},
-	["GOBLIN_FEMALE"]	= {0.629, 0.750, 0.75, 1.0},
-
-	["WORGEN_MALE"]		= {0.629, 0.750, 0, 0.25},
-	["WORGEN_FEMALE"]	= {0.629, 0.750, 0.5, 0.75},
-
-	["PANDAREN_MALE"]	= {0.756, 0.881, 0, 0.25},
-	["PANDAREN_FEMALE"]	= {0.756, 0.881, 0.5, 0.75},
-
-	["NIGHTBORNE_MALE"]	= {0.375, 0.5, 0, 0.25},
-	["NIGHTBORNE_FEMALE"]	= {0.375, 0.5, 0.5, 0.75},
-
-	["HIGHMOUNTAINTAUREN_MALE"]		= {0, 0.125, 0.25, 0.5},
-	["HIGHMOUNTAINTAUREN_FEMALE"]	= {0, 0.125, 0.75, 1.0},
-
-	["VOIDELF_MALE"]	= {0.5, 0.625, 0.25, 0.5},
-	["VOIDELF_FEMALE"]	= {0.5, 0.625, 0.75, 1.0},
-
-	["LIGHTFORGEDDRAENEI_MALE"]	= {0.5, 0.625, 0, 0.25},
-	["LIGHTFORGEDDRAENEI_FEMALE"]	= {0.5, 0.625, 0.5, 0.75},
-
-	["DARKIRONDWARF_MALE"]		= {0.125, 0.25, 0, 0.25},
-	["DARKIRONDWARF_FEMALE"]	= {0.125, 0.25, 0.5, 0.75},
-
-	["MAGHARORC_MALE"]			= {0.375, 0.5, 0.25, 0.5},
-	["MAGHARORC_FEMALE"]		= {0.375, 0.5, 0.75, 1.0},
-
-	["ZANDALARITROLL_MALE"]		= {0.25, 0.375, 0, 0.25},
-	["ZANDALARITROLL_FEMALE"]	= {0.25, 0.375, 0.5, 0.75},
-
-	["KULTIRAN_MALE"]		= {0, 0.125, 0, 0.25},
-	["KULTIRAN_FEMALE"]		= {0, 0.125, 0.5, 0.75},
-}
-
-local racePath = "Interface\\Glues\\CharacterCreate\\UI-CharacterCreate-Races"
-
-S.raceIconCache = setmetatable({}, {__index = function(t, k)
-	local top, bottom, left, right = unpack(RACE_ICON_TCOORDS[k])
-	local coords = strjoin(":", top*256, bottom*256, left*512, right*512)
-	local v = format("|T%s:%s:%s:%%s:%%s:256:512:%s|t", racePath, profile.IconSize, profile.IconSize, coords)
-	rawset(t, k, v)
-	return v
-end})
-
--- x and y vary so we can't cache that
-function S.GetRaceIcon(k, x, y)
-	return format(S.raceIconCache[k], x, y)
+function S.GetRaceIcon(name, genderID, x, y)
+	local atlas = GetRaceAtlas(name:lower(), S.sexName[genderID])
+	local icon = CreateAtlasMarkup(atlas, profile.IconSize, profile.IconSize, x-2, y)
+	return icon
 end
 
-	-------------------
-	--- Class Icons ---
-	-------------------
-
-S.classPath = "Interface\\Glues\\CharacterCreate\\UI-CharacterCreate-Classes"
-
-S.CLASS_ICON_TCOORDS_256 = CopyTable(CLASS_ICON_TCOORDS)
-
-for k1, v1 in pairs(S.CLASS_ICON_TCOORDS_256) do
-	for k2, v2 in ipairs(v1) do
-		S.CLASS_ICON_TCOORDS_256[k1][k2] = v2*256
-	end
-end
-
-S.classIconCache = setmetatable({}, {__index = function(t, k)
-	local coords = strjoin(":", unpack(S.CLASS_ICON_TCOORDS_256[k]))
-	local v = format("|T%s:%s:%s:%%s:%%s:256:256:%s|t", S.classPath, profile.IconSize, profile.IconSize, coords)
-	rawset(t, k, v)
-	return v
-end})
-
-function S.GetClassIcon(k, x, y)
-	return format(S.classIconCache[k], x, y)
+function S.GetClassIcon(name, x, y)
+	local atlas = GetClassAtlas(name)
+	local icon = CreateAtlasMarkup(atlas, profile.IconSize, profile.IconSize, x+2, y)
+	return icon
 end
 
 	--------------------

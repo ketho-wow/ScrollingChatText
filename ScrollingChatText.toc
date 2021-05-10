@@ -1,12 +1,12 @@
-## Interface: 80200
+## Interface-Retail: 90005
 ## Version: @project-version@
 ## Title: ScrollingChatText
 ## Notes: Shows Chat as Combat Text
 ## Author: Ketho @ EU-Boulderfist
 ## SavedVariables: ScrollingChatTextDB
 ## Dependencies: Blizzard_CombatText
-## OptionalDeps: Ace3, !ClassColors
-## X-Embeds: Ace3
+## OptionalDeps: Ace3, LibSink-2.0, !ClassColors
+## X-Curse-Project-ID: 36411
 ## X-WoWI-ID: 20827
 
 #@no-lib-strip@

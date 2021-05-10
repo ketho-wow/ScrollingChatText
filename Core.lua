@@ -369,7 +369,7 @@ function SCR:CHAT_MSG(event, ...)
 			
 			local x1, y1, x2, y2 = 4, 0, 4, 0 -- Legion: something is screwing with the icon positioning in FCT
 			if profile.sink20OutputSink == "Blizzard" then x1, y1, x2, y2 = -14, -8, 0, -8 end
-			local raceIcon = S.GetRaceIcon(strupper(race).."_"..S.sexremap[sex], x1, y1)
+			local raceIcon = S.GetRaceIcon(race, sex, x1, y1)
 			local classIcon = S.GetClassIcon(class, x2, y2)
 			
 			args.icon = (profile.IconSize > 1 and not isChat) and raceIcon..classIcon or ""
@@ -428,13 +428,11 @@ local gsubtrack = {}
 
 function SCR:CHAT_MSG_BN(event, ...)
 	if not StateFilter() then return end
+	local msg, realName, _, _, _, _, _, _, _, _, _, _, bnSenderID = ...
+	local info = C_BattleNet.GetAccountInfoByID(bnSenderID)
+	local accInfo = info.gameAccountInfo
 	
-	local msg, realName, _, _, _, _, _, _, _, _, _, _, presenceId = ...
-	
-	-- ToDo: add support for multiple toons / BNGetFriendGameAccountInfo
-	local _, toonName, client, _, _, _, _, class = BNGetGameAccountInfo(presenceId)
-	
-	local isPlayer = strfind(toonName or "", S.playerName) -- participating in Real ID whispers
+	local isPlayer = strfind(accInfo.characterName or "", S.playerName) -- participating in Real ID whispers
 	if profile.FilterSelf and (isPlayer or S.INFORM[event]) then return end
 	
 	local subevent = event:match("CHAT_MSG_(.+)")
@@ -442,18 +440,19 @@ function SCR:CHAT_MSG_BN(event, ...)
 	
 	if not chat[subevent] then return end
 	
-	if client == BNET_CLIENT_WOW then	
+	if accInfo.clientProgram == BNET_CLIENT_WOW then	
 		-- you can chat with a friend from a friend, through Real ID whispers
 		-- but only the toon name, and not the class/race/level/realm would be available
-		local classIcon = (class ~= "") and S.GetClassIcon(S.revLOCALIZED_CLASS_NAMES[class], 1, 1) or ""
+		local classIcon = accInfo.className and S.GetClassIcon(S.revLOCALIZED_CLASS_NAMES[accInfo.className], -6, -10) or ""
 		args.icon = (profile.IconSize > 1 and not isChat) and classIcon or ""
-		-- can't add (or very hard to) add Race Icons, since the BNGetGameAccountInfo return values are localized; also would need to know the sex
+		-- can't add add race icons since the return values are localized and need to know the sex
 		
 		local chanColor = S.chatCache[subevent]
 		args.chan = "|cff"..chanColor..L[subevent].."|r"
 		
-		local name = isChat and toonName or realName -- can't SendChatMessage Real ID Names, which is understandable
-		args.name = (class ~= "") and "|cff"..S.classCache[S.revLOCALIZED_CLASS_NAMES[class]]..name.."|r" or "|cff"..chanColor..name.."|r"
+		local name = isChat and accInfo.characterName or realName -- can't SendChatMessage Real ID Names, which is understandable
+		local classColor = S.classCache[S.revLOCALIZED_CLASS_NAMES[accInfo.className]]
+		args.name = (accInfo.className ~= "") and "|cff"..classColor..name.."|r" or "|cff"..chanColor..name.."|r"
 		
 		msg = profile.Split and SplitMessage(msg) or msg
 		
@@ -483,12 +482,13 @@ function SCR:CHAT_MSG_BN(event, ...)
 		
 		self:ChatOutput(profile.Message, args, profile.color[subevent])
 	else
-		args.icon = (profile.IconSize > 1 and not isChat and client) and "|TInterface\\ChatFrame\\UI-ChatIcon-"..S.clients[client]..":14:14:0:-1|t" or ""
+		args.icon = (profile.IconSize > 1 and not isChat and accInfo.clientProgram)
+			and "|TInterface\\ChatFrame\\UI-ChatIcon-"..S.clients[accInfo.clientProgram]..":14:14:0:-1|t" or ""
 		
 		local chanColor = S.chatCache[subevent]
 		args.chan = "|cff"..chanColor..L[subevent].."|r"
 		
-		local name = isChat and toonName or realName
+		local name = isChat and accInfo.characterName or realName
 		args.name = "|cff"..chanColor..name.."|r"
 		
 		args.msg = "|cff"..chanColor..msg.."|r"
