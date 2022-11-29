@@ -336,9 +336,13 @@ end})
 
 S.chatCache = setmetatable({}, {__index = function(t, k)
 	local color = profile.color[k]
-	local v = format("%02X%02X%02X", color.r*255, color.g*255, color.b*255)
-	rawset(t, k, v)
-	return v
+	if color then
+		local v = format("%02X%02X%02X", color.r*255, color.g*255, color.b*255)
+		rawset(t, k, v)
+		return v
+	else
+		return "FFFFFF"
+	end
 end})
 
 function SCR:WipeCache()
@@ -350,17 +354,34 @@ end
 	--- Icons ---
 	-------------
 
+-- For these races, the names are shortened for the atlas
+local fixedRaceAtlasNames = {
+	["highmountaintauren"] = "highmountain",
+	["lightforgeddraenei"] = "lightforged",
+	["scourge"] = "undead",
+	["zandalaritroll"] = "zandalari",
+}
+
+-- GetRaceAtlas was removed from framexml in 10.0.0
+local function GetRaceAtlas(raceName, gender, useHiRez)
+	if (fixedRaceAtlasNames[raceName]) then
+		raceName = fixedRaceAtlasNames[raceName]
+	end
+	local formatingString = useHiRez and "raceicon128-%s-%s" or "raceicon-%s-%s"
+	return formatingString:format(raceName, gender)
+end
+
 S.sexName = {nil, "male", "female"}
 
 function S.GetRaceIcon(name, genderID, x, y)
 	local atlas = GetRaceAtlas(name:lower(), S.sexName[genderID])
-	local icon = CreateAtlasMarkup(atlas, profile.IconSize, profile.IconSize, x-2, y)
+	local icon = CreateAtlasMarkup(atlas, profile.IconSize, profile.IconSize, x-8, y-2)
 	return icon
 end
 
 function S.GetClassIcon(name, x, y)
 	local atlas = GetClassAtlas(name)
-	local icon = CreateAtlasMarkup(atlas, profile.IconSize, profile.IconSize, x+2, y)
+	local icon = CreateAtlasMarkup(atlas, profile.IconSize-1, profile.IconSize-1, x, y-2)
 	return icon
 end
 
@@ -416,12 +437,8 @@ S.LibSinkChat = {
 -- https://github.com/Gethe/wow-ui-textures/tree/live/CHATFRAME
 S.clients = { -- also used as remap for SC2/D3 icon
 	[BNET_CLIENT_WOW] = "WOW",
-	[BNET_CLIENT_SC2] = "SC2",
-	[BNET_CLIENT_D3] = "D3",
-	[BNET_CLIENT_WTCG] = "WTCG",
 	[BNET_CLIENT_APP] = "Battlenet",
 	[BNET_CLIENT_HEROES] = "HotS", -- different than FrameXML\BNet.lua
-	[BNET_CLIENT_OVERWATCH] = "Overwatch", -- same
 	[BNET_CLIENT_CLNT] = "Battlenet",
 }
 

@@ -1,4 +1,6 @@
-## Interface-Retail: 90005
+## Interface: 100002
+## Interface-Wrath: 30400
+## Interface-Classic: 11403
 ## Version: @project-version@
 ## Title: ScrollingChatText
 ## Notes: Shows Chat as Combat Text
@@ -8,6 +10,7 @@
 ## OptionalDeps: Ace3, LibSink-2.0, !ClassColors
 ## X-Curse-Project-ID: 36411
 ## X-WoWI-ID: 20827
+## X-Wago-ID: ME6gq3G1
 
 #@no-lib-strip@
 Libs\LibStub\LibStub.lua

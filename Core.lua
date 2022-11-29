@@ -482,7 +482,7 @@ function SCR:CHAT_MSG_BN(event, ...)
 
 		self:ChatOutput(profile.Message, args, profile.color[subevent])
 	else
-		args.icon = (profile.IconSize > 1 and not isChat and accInfo.clientProgram)
+		args.icon = (profile.IconSize > 1 and not isChat and accInfo.clientProgram) and S.clients[accInfo.clientProgram]
 			and "|TInterface\\ChatFrame\\UI-ChatIcon-"..S.clients[accInfo.clientProgram]..":14:14:0:-1|t" or ""
 
 		local chanColor = S.chatCache[subevent]

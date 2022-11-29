@@ -133,11 +133,13 @@ end
 function SCR:GetChatTypeInfo()
 	for _, v in ipairs(S.ColorOptions) do
 		local color = ChatTypeInfo[v]
-		defaults.profile.color[v] = {
-			r = color.r,
-			g = color.g,
-			b = color.b,
-		}
+		if color then
+			defaults.profile.color[v] = {
+				r = color.r,
+				g = color.g,
+				b = color.b,
+			}
+		end
 		if S.colorremap[v] then -- EMOTE, WHISPER, BN_WHISPER
 			defaults.profile.color[S.colorremap[v]] = defaults.profile.color[v]
 		end
@@ -157,11 +159,13 @@ function SCR:GetChatTypeInfo()
 		v = (v == "ERRORS") and "FILTERED" or v -- dirty hack
 
 		local color = ChatTypeInfo[v]
-		defaults.profile.color[v] = {
-			r = color.r,
-			g = color.g,
-			b = color.b,
-		}
+		if color then
+			defaults.profile.color[v] = {
+				r = color.r,
+				g = color.g,
+				b = color.b,
+			}
+		end
 		-- special reverse case: ERRORS -> FILTERED -> ERRORS, RESTRICTED
 		if S.colorremap[v] then
 			for _, v2 in ipairs(S.colorremap[v]) do
@@ -633,24 +637,30 @@ end
 
 function SCR:GetValueColor(i)
 	local c = profile.color[i[#i]]
-	return c.r, c.g, c.b
+	if c then
+		return c.r, c.g, c.b
+	else
+		return 0, 0, 0
+	end
 end
 
 function SCR:SetValueColor(i, r, g, b)
 	local c = profile.color[i[#i]]
-	c.r = r
-	c.g = g
-	c.b = b
+	if c then
+		c.r = r
+		c.g = g
+		c.b = b
 
-	local group = S.colorremap[i[#i]]
-	if not group then return end
+		local group = S.colorremap[i[#i]]
+		if not group then return end
 
-	if type(group) == "table" then -- special reverse case: ERRORS
-		for _, v in ipairs(group) do
-			profile.color[v] = c
+		if type(group) == "table" then -- special reverse case: ERRORS
+			for _, v in ipairs(group) do
+				profile.color[v] = c
+			end
+		else
+			profile.color[group] = c
 		end
-	else
-		profile.color[group] = c
 	end
 end
 
@@ -813,10 +823,12 @@ do
 		}
 	else
 		for k, v in pairs(LOCALIZED_CLASS_NAMES_MALE) do
-			class[k] = {
-				type = "color",
-				name = v,
-			}
+			if k ~= "Adventurer" then
+				class[k] = {
+					type = "color",
+					name = v,
+				}
+			end
 		end
 	end
 end
