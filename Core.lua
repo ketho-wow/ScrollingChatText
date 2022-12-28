@@ -604,7 +604,7 @@ end
 function SCR:Output(msg, color)
 	-- Legion: if we can to output to Blizzard FCT but LibSink sees
 	--  that Blizzard FCT is disabled (only the option), then we work around it
-	if profile.sink20OutputSink == "Blizzard" and SHOW_COMBAT_TEXT == "0" then
+	if profile.sink20OutputSink == "Blizzard" and GetCVar("enableFloatingCombatText") == "1" then
 		CombatText_AddMessage(msg, COMBAT_TEXT_SCROLL_FUNCTION, color.r, color.g, color.b)
 	else
 		self:Pour(msg, color.r, color.g, color.b)
